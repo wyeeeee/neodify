@@ -12,7 +12,13 @@
 ## 当前状态
 
 - 已使用 `Vite + Vue 3 + TypeScript` 初始化
-- 当前为基础脚手架页面，业务 UI 待按后端能力逐步接入
+- 已完成单用户登录页（账号密码登录）
+- 登录成功后会将 `token/expiresAt/username` 持久化到 `localStorage`
+- 支持登录态展示与退出登录
+
+## 环境变量
+
+- `VITE_API_BASE_URL`：后端 API 基地址，默认 `http://127.0.0.1:3000`
 
 ## 常用命令
 
