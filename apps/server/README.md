@@ -30,3 +30,12 @@
 - 会话级 Skill 复用：Skill 投影到 `.runtime/conversations/<conversationId>/.claude/skills`
 - Claude SDK 已破坏性切换至 TypeScript V2（`createSession/resumeSession/send/stream`）
 - 测试：Skill 文件服务、事件总线、Cron 校验
+
+## 环境变量
+
+请在 `apps/server/.env` 中配置（可从 `apps/server/.env.example` 复制）：
+
+- `ANTHROPIC_API_KEY`：Anthropic API Key（必填）
+- `DATABASE_URL`：SQLite 文件路径（相对 `apps/server`）
+- `HOST`：监听地址（默认 `0.0.0.0`）
+- `PORT`：监听端口（默认 `3000`）
