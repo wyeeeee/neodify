@@ -53,6 +53,16 @@ export interface ScheduleRecord {
   lastRunAt: number | null;
 }
 
+export interface ConversationRecord {
+  id: string;
+  agentId: string;
+  title: string;
+  cwd: string;
+  sdkSessionId: string | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface AgentSkillBindingRecord {
   agentId: string;
   skillId: string;
@@ -71,6 +81,9 @@ export interface RunRecord {
   id: string;
   source: RunSource;
   agentId: string;
+  conversationId: string | null;
+  turnIndex: number;
+  sdkSessionId: string | null;
   status: RunStatus;
   inputJson: string;
   outputJson: string | null;

@@ -41,6 +41,9 @@ describe('db repositories', () => {
       id: 'run-1',
       source: 'web',
       agentId: 'agent-1',
+      conversationId: null,
+      turnIndex: 1,
+      sdkSessionId: null,
       status: 'running',
       inputJson: JSON.stringify({ text: 'hello' }),
       outputJson: null,
@@ -66,6 +69,41 @@ describe('db repositories', () => {
     expect(run?.status).toBe('completed');
     expect(events).toHaveLength(1);
     expect(events[0]?.eventType).toBe('run.started');
+  });
+
+  test('conversation repository should persist and compute turn index', () => {
+    const db = createDbContext(dbPath);
+    const now = Date.now();
+
+    db.conversationRepository.upsert({
+      id: 'conv-1',
+      agentId: 'agent-1',
+      title: '测试会话',
+      cwd: 'C:/tmp/conv-1',
+      sdkSessionId: null,
+      createdAt: now,
+      updatedAt: now
+    });
+
+    db.runRepository.create({
+      id: 'run-a',
+      source: 'web',
+      agentId: 'agent-1',
+      conversationId: 'conv-1',
+      turnIndex: 1,
+      sdkSessionId: 'session-1',
+      status: 'completed',
+      inputJson: '{}',
+      outputJson: '{}',
+      errorMsg: null,
+      startedAt: now,
+      endedAt: now,
+      latencyMs: 1,
+      costJson: '{}'
+    });
+
+    const turn = db.conversationRepository.nextTurnIndex('conv-1');
+    expect(turn).toBe(2);
   });
 
   test('agent bindings can replace and list enabled skill/mcp ids', () => {

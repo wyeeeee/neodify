@@ -1,4 +1,5 @@
 import type { DbContext } from '@neodify/db';
+import type { ConversationService } from '../conversations/conversation-service.js';
 import type { SkillRuntimeService } from '../skills/skill-runtime.service.js';
 import type { AgentProvider } from '../../providers/agent-provider.js';
 import type { RunInput } from '../../types/domain.js';
@@ -13,6 +14,7 @@ export class RunService {
   constructor(
     private readonly db: DbContext,
     private readonly agentService: AgentService,
+    private readonly conversationService: ConversationService,
     private readonly skillRuntimeService: SkillRuntimeService,
     private readonly provider: AgentProvider,
     private readonly bus: RunEventBus
@@ -29,10 +31,18 @@ export class RunService {
     await this.guard.withLock(runId, async () => {
       let seq = 0;
       const startedAt = Date.now();
+      const conversation = input.conversationId
+        ? this.conversationService.getConversation(input.conversationId)
+        : null;
+
+      const turnIndex = conversation ? this.conversationService.nextTurnIndex(conversation.id) : 1;
       this.db.runRepository.create({
         id: runId,
         source: input.source,
         agentId: input.agentId,
+        conversationId: conversation?.id ?? null,
+        turnIndex,
+        sdkSessionId: conversation?.sdkSessionId ?? null,
         status: 'running',
         inputJson: JSON.stringify({ prompt: input.prompt, metadata: input.metadata }),
         outputJson: null,
@@ -52,7 +62,9 @@ export class RunService {
           mcpCount: resolved.mcps.length
         });
 
-        const runCwd = this.skillRuntimeService.prepareRunCwd(runId, resolved.skills);
+        const runCwd = conversation
+          ? this.skillRuntimeService.prepareConversationCwd(conversation.id, conversation.cwd, resolved.skills)
+          : this.skillRuntimeService.prepareRunCwd(runId, resolved.skills);
         this.appendEvent(runId, ++seq, 'skill.runtime_prepared', {
           runCwd,
           skillCount: resolved.skills.length
@@ -64,8 +76,14 @@ export class RunService {
           model: resolved.agent.model,
           maxTokens: resolved.agent.maxTokens,
           mcpList: resolved.mcps,
-          cwd: runCwd
+          cwd: runCwd,
+          resumeSessionId: conversation?.sdkSessionId ?? undefined
         });
+
+        if (conversation && result.sessionId) {
+          this.conversationService.updateSessionId(conversation.id, result.sessionId);
+          this.db.runRepository.updateSdkSessionId(runId, result.sessionId);
+        }
 
         for (const event of result.events) {
           this.appendEvent(runId, ++seq, event.eventType, event.payload);

@@ -25,4 +25,7 @@
 - 定时任务：基于 `node-cron` 的 schedule 执行器
 - Skill 官方接入：运行时投影到 `.runtime/runs/<runId>/.claude/skills/*/SKILL.md` 并由 SDK 官方参数加载
 - Skill 同步：本地文件缺失时自动将数据库 Skill 标记为 `disabled`
+- 多轮会话：`conversation` 维度复用 SDK session（`resume`）
+- 每轮新 Run：同一会话下每次用户消息都会创建新 run 记录（turn_index 递增）
+- 会话级 Skill 复用：Skill 投影到 `.runtime/conversations/<conversationId>/.claude/skills`
 - 测试：Skill 文件服务、事件总线、Cron 校验

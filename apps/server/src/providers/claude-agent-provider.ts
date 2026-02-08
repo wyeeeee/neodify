@@ -45,6 +45,7 @@ export class ClaudeAgentProvider implements AgentProvider {
     let finalText = '';
     let structuredOutput: unknown | null = null;
     let totalCostUsd = 0;
+    let sessionId: string | null = null;
     const startedAt = Date.now();
 
     for await (const message of query({
@@ -64,9 +65,13 @@ export class ClaudeAgentProvider implements AgentProvider {
         mcpServers: toMcpConfig(input.mcpList),
         extraArgs: {
           'max-output-tokens': String(input.maxTokens)
-        }
+        },
+        resume: input.resumeSessionId
       }
     })) {
+      if ('session_id' in message && typeof message.session_id === 'string') {
+        sessionId = message.session_id;
+      }
       if (message.type === 'assistant') {
         const blocks = message.message.content as UnknownContentBlock[];
         const text = blocks
@@ -112,6 +117,7 @@ export class ClaudeAgentProvider implements AgentProvider {
       structuredOutput,
       totalCostUsd,
       durationMs: Date.now() - startedAt,
+      sessionId,
       events
     };
   }

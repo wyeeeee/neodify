@@ -3,6 +3,7 @@ import {
   AgentRepository,
   AgentMcpBindingRepository,
   AgentSkillBindingRepository,
+  ConversationRepository,
   McpRepository,
   RunEventRepository,
   RunRepository,
@@ -22,6 +23,7 @@ export interface DbContext {
   scheduleRepository: ScheduleRepository;
   runRepository: RunRepository;
   runEventRepository: RunEventRepository;
+  conversationRepository: ConversationRepository;
 }
 
 export function createDbContext(dbPath?: string): DbContext {
@@ -35,6 +37,7 @@ export function createDbContext(dbPath?: string): DbContext {
     mcpRepository: new McpRepository(db),
     scheduleRepository: new ScheduleRepository(db),
     runRepository: new RunRepository(db),
-    runEventRepository: new RunEventRepository(db)
+    runEventRepository: new RunEventRepository(db),
+    conversationRepository: new ConversationRepository(db)
   };
 }

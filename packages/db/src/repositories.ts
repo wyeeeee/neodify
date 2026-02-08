@@ -3,6 +3,7 @@ import type {
   AgentRecord,
   AgentMcpBindingRecord,
   AgentSkillBindingRecord,
+  ConversationRecord,
   McpRecord,
   RunEventRecord,
   RunRecord,
@@ -337,9 +338,11 @@ export class RunRepository {
     this.db
       .prepare(
         `INSERT INTO runs (
-          id, source, agent_id, status, input_json, output_json, error_msg, started_at, ended_at, latency_ms, cost_json
+          id, source, agent_id, conversation_id, turn_index, sdk_session_id, status, input_json, output_json, error_msg,
+          started_at, ended_at, latency_ms, cost_json
         ) VALUES (
-          @id, @source, @agentId, @status, @inputJson, @outputJson, @errorMsg, @startedAt, @endedAt, @latencyMs, @costJson
+          @id, @source, @agentId, @conversationId, @turnIndex, @sdkSessionId, @status, @inputJson, @outputJson, @errorMsg,
+          @startedAt, @endedAt, @latencyMs, @costJson
         );`
       )
       .run(run);
@@ -365,6 +368,10 @@ export class RunRepository {
       .run({ runId, errorMsg, endedAt, latencyMs });
   }
 
+  updateSdkSessionId(runId: string, sdkSessionId: string | null): void {
+    this.db.prepare('UPDATE runs SET sdk_session_id = ? WHERE id = ?').run(sdkSessionId, runId);
+  }
+
   getById(runId: string): RunRecord | null {
     const row = this.db.prepare('SELECT * FROM runs WHERE id = ?').get(runId) as Record<string, unknown> | undefined;
     if (!row) {
@@ -374,6 +381,9 @@ export class RunRepository {
       id: String(row.id),
       source: row.source as RunRecord['source'],
       agentId: String(row.agent_id),
+      conversationId: row.conversation_id ? String(row.conversation_id) : null,
+      turnIndex: Number(row.turn_index),
+      sdkSessionId: row.sdk_session_id ? String(row.sdk_session_id) : null,
       status: row.status as RunRecord['status'],
       inputJson: String(row.input_json),
       outputJson: row.output_json ? String(row.output_json) : null,
@@ -383,6 +393,59 @@ export class RunRepository {
       latencyMs: row.latency_ms === null ? null : Number(row.latency_ms),
       costJson: String(row.cost_json)
     };
+  }
+}
+
+export class ConversationRepository {
+  constructor(private readonly db: Database.Database) {}
+
+  upsert(conversation: ConversationRecord): void {
+    this.db
+      .prepare(
+        `INSERT INTO conversations (
+          id, agent_id, title, cwd, sdk_session_id, created_at, updated_at
+        ) VALUES (
+          @id, @agentId, @title, @cwd, @sdkSessionId, @createdAt, @updatedAt
+        )
+        ON CONFLICT(id) DO UPDATE SET
+          agent_id = excluded.agent_id,
+          title = excluded.title,
+          cwd = excluded.cwd,
+          sdk_session_id = excluded.sdk_session_id,
+          updated_at = excluded.updated_at;`
+      )
+      .run(conversation);
+  }
+
+  getById(conversationId: string): ConversationRecord | null {
+    const row = this.db
+      .prepare('SELECT * FROM conversations WHERE id = ?')
+      .get(conversationId) as Record<string, unknown> | undefined;
+    if (!row) {
+      return null;
+    }
+    return {
+      id: String(row.id),
+      agentId: String(row.agent_id),
+      title: String(row.title),
+      cwd: String(row.cwd),
+      sdkSessionId: row.sdk_session_id ? String(row.sdk_session_id) : null,
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at)
+    };
+  }
+
+  nextTurnIndex(conversationId: string): number {
+    const row = this.db
+      .prepare('SELECT COALESCE(MAX(turn_index), 0) AS max_turn FROM runs WHERE conversation_id = ?')
+      .get(conversationId) as Record<string, unknown>;
+    return Number(row.max_turn) + 1;
+  }
+
+  updateSessionId(conversationId: string, sdkSessionId: string | null): void {
+    this.db
+      .prepare('UPDATE conversations SET sdk_session_id = ?, updated_at = ? WHERE id = ?')
+      .run(sdkSessionId, Date.now(), conversationId);
   }
 }
 

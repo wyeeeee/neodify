@@ -7,6 +7,7 @@ export interface AgentProviderInput {
   maxTokens: number;
   mcpList: McpConfig[];
   cwd: string;
+  resumeSessionId?: string;
 }
 
 export interface AgentProvider {

@@ -18,5 +18,26 @@ export class SkillRuntimeService {
 
     return runCwd;
   }
-}
 
+  prepareConversationCwd(conversationId: string, conversationCwd: string, skills: SkillConfig[]): string {
+    const runSkillRoot = path.resolve(conversationCwd, '.claude', 'skills');
+    fs.mkdirSync(runSkillRoot, { recursive: true });
+
+    const existing = fs.existsSync(runSkillRoot) ? new Set(fs.readdirSync(runSkillRoot)) : new Set<string>();
+    const targetSet = new Set(skills.map((item) => item.id));
+
+    for (const folder of existing) {
+      if (!targetSet.has(folder)) {
+        fs.rmSync(path.resolve(runSkillRoot, folder), { recursive: true, force: true });
+      }
+    }
+
+    for (const skill of skills) {
+      const targetDir = path.resolve(runSkillRoot, skill.id);
+      fs.mkdirSync(targetDir, { recursive: true });
+      fs.copyFileSync(skill.skillMdPath, path.join(targetDir, 'SKILL.md'));
+    }
+
+    return conversationCwd;
+  }
+}

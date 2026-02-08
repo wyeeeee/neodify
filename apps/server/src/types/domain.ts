@@ -35,6 +35,7 @@ export interface McpConfig {
 export interface RunInput {
   source: 'web' | 'cron';
   agentId: string;
+  conversationId?: string;
   prompt: string;
   metadata: Record<string, unknown>;
 }
@@ -44,6 +45,7 @@ export interface RunResult {
   structuredOutput: unknown | null;
   totalCostUsd: number;
   durationMs: number;
+  sessionId: string | null;
   events: Array<{
     eventType: string;
     payload: Record<string, unknown>;

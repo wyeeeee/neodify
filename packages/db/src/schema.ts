@@ -60,10 +60,22 @@ const ddl = [
     next_run_at INTEGER,
     last_run_at INTEGER
   );`,
+  `CREATE TABLE IF NOT EXISTS conversations (
+    id TEXT PRIMARY KEY,
+    agent_id TEXT NOT NULL,
+    title TEXT NOT NULL,
+    cwd TEXT NOT NULL,
+    sdk_session_id TEXT,
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+  );`,
   `CREATE TABLE IF NOT EXISTS runs (
     id TEXT PRIMARY KEY,
     source TEXT NOT NULL,
     agent_id TEXT NOT NULL,
+    conversation_id TEXT,
+    turn_index INTEGER NOT NULL,
+    sdk_session_id TEXT,
     status TEXT NOT NULL,
     input_json TEXT NOT NULL,
     output_json TEXT,
@@ -89,4 +101,3 @@ export function initializeSchema(db: Database.Database): void {
     db.prepare(sql).run();
   }
 }
-

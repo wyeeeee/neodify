@@ -17,6 +17,7 @@ export class SchedulerRunner {
         await this.runService.execute({
           source: 'cron',
           agentId: schedule.agentId,
+          conversationId: undefined,
           prompt: String(schedule.inputTemplate.prompt ?? ''),
           metadata: {
             scheduleId: schedule.id,
@@ -36,4 +37,3 @@ export class SchedulerRunner {
     this.tasks.clear();
   }
 }
-

@@ -5,6 +5,7 @@ import websocket from '@fastify/websocket';
 import { createDbContext } from '@neodify/db';
 import {
   createAgentSchema,
+  createConversationSchema,
   createMcpSchema,
   createScheduleSchema,
   createSkillSchema,
@@ -12,6 +13,7 @@ import {
   updateSkillContentSchema
 } from './types/api.js';
 import { AgentService } from './modules/agents/agent-service.js';
+import { ConversationService } from './modules/conversations/conversation-service.js';
 import { McpService } from './modules/mcp/mcp-service.js';
 import { RunEventBus } from './modules/runs/run-event-bus.js';
 import { RunService } from './modules/runs/run-service.js';
@@ -37,9 +39,10 @@ export async function buildApp() {
   const skillService = new SkillService(db, skillFileService);
   const mcpService = new McpService(db);
   const agentService = new AgentService(db);
+  const conversationService = new ConversationService(db, skillFileService.getRepoRoot());
   const eventBus = new RunEventBus();
   const provider = new ClaudeAgentProvider();
-  const runService = new RunService(db, agentService, skillRuntimeService, provider, eventBus);
+  const runService = new RunService(db, agentService, conversationService, skillRuntimeService, provider, eventBus);
   const scheduleService = new ScheduleService(db);
   const schedulerRunner = new SchedulerRunner(scheduleService, runService);
 
@@ -50,6 +53,12 @@ export async function buildApp() {
 
   app.post('/skills/sync', async (_request, reply) => {
     skillService.syncMissingSkillsToDisabled();
+    return reply.send({ ok: true });
+  });
+
+  app.post('/conversations', async (request, reply) => {
+    const payload = createConversationSchema.parse(request.body);
+    conversationService.createConversation(payload);
     return reply.send({ ok: true });
   });
 
@@ -100,6 +109,7 @@ export async function buildApp() {
     const result = await runService.execute({
       source: 'web',
       agentId: payload.agentId,
+      conversationId: payload.conversationId,
       prompt: payload.prompt,
       metadata: payload.metadata
     });
