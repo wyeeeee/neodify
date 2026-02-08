@@ -67,5 +67,23 @@ describe('db repositories', () => {
     expect(events).toHaveLength(1);
     expect(events[0]?.eventType).toBe('run.started');
   });
-});
 
+  test('agent bindings can replace and list enabled skill/mcp ids', () => {
+    const db = createDbContext(dbPath);
+    db.agentSkillBindingRepository.replaceByAgent('agent-1', [
+      { agentId: 'agent-1', skillId: 'skill-a', enabled: true, priority: 2 },
+      { agentId: 'agent-1', skillId: 'skill-b', enabled: true, priority: 1 },
+      { agentId: 'agent-1', skillId: 'skill-c', enabled: false, priority: 0 }
+    ]);
+    db.agentMcpBindingRepository.replaceByAgent('agent-1', [
+      { agentId: 'agent-1', mcpId: 'mcp-a', enabled: true, priority: 5 },
+      { agentId: 'agent-1', mcpId: 'mcp-b', enabled: true, priority: 1 }
+    ]);
+
+    const skillIds = db.agentSkillBindingRepository.listEnabledSkillIdsByAgent('agent-1');
+    const mcpIds = db.agentMcpBindingRepository.listEnabledMcpIdsByAgent('agent-1');
+
+    expect(skillIds).toEqual(['skill-b', 'skill-a']);
+    expect(mcpIds).toEqual(['mcp-b', 'mcp-a']);
+  });
+});

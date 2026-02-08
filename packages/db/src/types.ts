@@ -53,6 +53,20 @@ export interface ScheduleRecord {
   lastRunAt: number | null;
 }
 
+export interface AgentSkillBindingRecord {
+  agentId: string;
+  skillId: string;
+  enabled: boolean;
+  priority: number;
+}
+
+export interface AgentMcpBindingRecord {
+  agentId: string;
+  mcpId: string;
+  enabled: boolean;
+  priority: number;
+}
+
 export interface RunRecord {
   id: string;
   source: RunSource;
@@ -75,4 +89,3 @@ export interface RunEventRecord {
   payloadJson: string;
   createdAt: number;
 }
-

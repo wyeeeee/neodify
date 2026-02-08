@@ -1,6 +1,8 @@
 import { createSqlite } from './client.js';
 import {
   AgentRepository,
+  AgentMcpBindingRepository,
+  AgentSkillBindingRepository,
   McpRepository,
   RunEventRepository,
   RunRepository,
@@ -13,6 +15,8 @@ export * from './types.js';
 
 export interface DbContext {
   agentRepository: AgentRepository;
+  agentSkillBindingRepository: AgentSkillBindingRepository;
+  agentMcpBindingRepository: AgentMcpBindingRepository;
   skillRepository: SkillRepository;
   mcpRepository: McpRepository;
   scheduleRepository: ScheduleRepository;
@@ -25,6 +29,8 @@ export function createDbContext(dbPath?: string): DbContext {
   initializeSchema(db);
   return {
     agentRepository: new AgentRepository(db),
+    agentSkillBindingRepository: new AgentSkillBindingRepository(db),
+    agentMcpBindingRepository: new AgentMcpBindingRepository(db),
     skillRepository: new SkillRepository(db),
     mcpRepository: new McpRepository(db),
     scheduleRepository: new ScheduleRepository(db),
@@ -32,4 +38,3 @@ export function createDbContext(dbPath?: string): DbContext {
     runEventRepository: new RunEventRepository(db)
   };
 }
-
