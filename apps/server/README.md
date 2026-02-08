@@ -28,4 +28,5 @@
 - 多轮会话：`conversation` 维度复用 SDK session（`resume`）
 - 每轮新 Run：同一会话下每次用户消息都会创建新 run 记录（turn_index 递增）
 - 会话级 Skill 复用：Skill 投影到 `.runtime/conversations/<conversationId>/.claude/skills`
+- Claude SDK 已破坏性切换至 TypeScript V2（`createSession/resumeSession/send/stream`）
 - 测试：Skill 文件服务、事件总线、Cron 校验
