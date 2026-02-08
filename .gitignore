@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env
+.env.*
+*.db
+*.db-*
+coverage/
+npm-debug.log*
+
