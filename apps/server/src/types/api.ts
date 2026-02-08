@@ -1,5 +1,10 @@
 import { z } from 'zod';
 
+export const loginSchema = z.object({
+  username: z.string().min(1),
+  password: z.string().min(1)
+});
+
 export const createAgentSchema = z.object({
   id: z.string().min(1),
   name: z.string().min(1),
@@ -66,3 +71,4 @@ export type CreateMcpDto = z.infer<typeof createMcpSchema>;
 export type CreateScheduleDto = z.infer<typeof createScheduleSchema>;
 export type RunWebDto = z.infer<typeof runWebSchema>;
 export type CreateConversationDto = z.infer<typeof createConversationSchema>;
+export type LoginDto = z.infer<typeof loginSchema>;

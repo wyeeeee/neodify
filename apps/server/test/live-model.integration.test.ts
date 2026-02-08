@@ -14,7 +14,7 @@ describe('ClaudeAgentProvider live integration', () => {
   runLiveTest('should call claude model successfully', async () => {
     const provider = new ClaudeAgentProvider();
     const result = await provider.run({
-      prompt: '请只回复字符串：OK',
+      prompt: '我是奶龙',
       systemPrompt: '你是一个严格遵循输出要求的助手。',
       model: process.env.ANTHROPIC_MODEL ?? 'claude-sonnet-4-5',
       maxTokens: 128,

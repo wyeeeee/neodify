@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { createDbContext } from '../src/index.js';
+import { createDbContext } from '../src/db/index.js';
 
 const now = Date.now();
 
@@ -73,7 +73,7 @@ describe('db repositories', () => {
 
   test('conversation repository should persist and compute turn index', () => {
     const db = createDbContext(dbPath);
-    const now = Date.now();
+    const currentTime = Date.now();
 
     db.conversationRepository.upsert({
       id: 'conv-1',
@@ -81,8 +81,8 @@ describe('db repositories', () => {
       title: '测试会话',
       cwd: 'C:/tmp/conv-1',
       sdkSessionId: null,
-      createdAt: now,
-      updatedAt: now
+      createdAt: currentTime,
+      updatedAt: currentTime
     });
 
     db.runRepository.create({
@@ -96,8 +96,8 @@ describe('db repositories', () => {
       inputJson: '{}',
       outputJson: '{}',
       errorMsg: null,
-      startedAt: now,
-      endedAt: now,
+      startedAt: currentTime,
+      endedAt: currentTime,
       latencyMs: 1,
       costJson: '{}'
     });

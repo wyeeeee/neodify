@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { createDbContext } from '@neodify/db';
+import { createDbContext } from '../src/db/index.js';
 import { ConversationService } from '../src/modules/conversations/conversation-service.js';
 
 let dbPath = '';
@@ -26,4 +26,3 @@ describe('ConversationService', () => {
     expect(conversation?.cwd).toContain('.runtime');
   });
 });
-

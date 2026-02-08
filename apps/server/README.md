@@ -12,6 +12,7 @@
 ## 目录约定
 
 - `src/main.ts`：服务启动入口
+- `src/db/*`：内置数据库层（schema、repository、类型与初始化）
 - `src/modules/*`：按领域拆分的业务模块
 - `src/providers/*`：模型 SDK 适配层（支持后续替换）
 - `test/*`：后端模块测试
@@ -29,7 +30,8 @@
 - 每轮新 Run：同一会话下每次用户消息都会创建新 run 记录（turn_index 递增）
 - 会话级 Skill 复用：Skill 投影到 `.runtime/conversations/<conversationId>/.claude/skills`
 - Claude SDK 已破坏性切换至 TypeScript V2（`createSession/resumeSession/send/stream`）
-- 测试：Skill 文件服务、事件总线、Cron 校验
+- 单用户登录鉴权：`/auth/login` + Bearer Token 保护 API 与 WebSocket
+- 测试：DB 仓储、鉴权、Skill 文件服务、事件总线、Cron 校验
 
 ## 环境变量
 
@@ -39,6 +41,10 @@
 - `DATABASE_URL`：SQLite 文件路径（相对 `apps/server`）
 - `HOST`：监听地址（默认 `0.0.0.0`）
 - `PORT`：监听端口（默认 `3000`）
+- `AUTH_USERNAME`：登录账号（必填）
+- `AUTH_PASSWORD`：登录密码（必填）
+- `AUTH_TOKEN_SECRET`：Token 签名密钥（必填）
+- `AUTH_TOKEN_TTL_SEC`：Token 有效期秒数（默认 `86400`）
 
 ## 测试命令
 

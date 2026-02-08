@@ -1,4 +1,4 @@
-import type { DbContext } from '@neodify/db';
+import type { DbContext } from '../../db/index.js';
 import type { CreateSkillDto } from '../../types/api.js';
 import type { SkillConfig } from '../../types/domain.js';
 import { SkillFileService } from './skill-file.service.js';

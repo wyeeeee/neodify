@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import type { DbContext } from '@neodify/db';
+import type { DbContext } from '../../db/index.js';
 import type { CreateScheduleDto } from '../../types/api.js';
 
 export class ScheduleService {
@@ -28,4 +28,3 @@ export class ScheduleService {
     }));
   }
 }
-

@@ -2,8 +2,15 @@ node_modules/
 dist/
 .env
 .env.*
+!.env.example
+!**/.env.example
 *.db
 *.db-*
 coverage/
 npm-debug.log*
-
+.runtime/
+skills/
+data/
+.vscode/
+*.sqlite
+*.sqlite-*

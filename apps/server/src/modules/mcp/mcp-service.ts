@@ -1,4 +1,4 @@
-import type { DbContext } from '@neodify/db';
+import type { DbContext } from '../../db/index.js';
 import type { CreateMcpDto } from '../../types/api.js';
 import type { McpConfig } from '../../types/domain.js';
 
@@ -40,4 +40,3 @@ export class McpService {
     }));
   }
 }
-

@@ -2,13 +2,14 @@ import path from 'node:path';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import websocket from '@fastify/websocket';
-import { createDbContext } from '@neodify/db';
+import { createDbContext } from './db/index.js';
 import {
   createAgentSchema,
   createConversationSchema,
   createMcpSchema,
   createScheduleSchema,
   createSkillSchema,
+  loginSchema,
   runWebSchema,
   updateSkillContentSchema
 } from './types/api.js';
@@ -23,11 +24,23 @@ import { SkillFileService } from './modules/skills/skill-file.service.js';
 import { SkillRuntimeService } from './modules/skills/skill-runtime.service.js';
 import { SkillService } from './modules/skills/skill-service.js';
 import { ClaudeAgentProvider } from './providers/claude-agent-provider.js';
+import { AuthService } from './modules/auth/auth-service.js';
+
+declare module 'fastify' {
+  interface FastifyRequest {
+    authUser?: {
+      username: string;
+      expiresAt: string;
+    };
+  }
+}
 
 export async function buildApp() {
   const app = Fastify({ logger: true });
   await app.register(cors, { origin: true });
   await app.register(websocket);
+
+  const authService = new AuthService();
 
   const dbPath = process.env.DATABASE_URL
     ? path.resolve(process.cwd(), process.env.DATABASE_URL)
@@ -49,6 +62,50 @@ export async function buildApp() {
   app.addHook('onReady', async () => {
     skillService.syncMissingSkillsToDisabled();
     schedulerRunner.start();
+  });
+
+  const publicPaths = new Set(['/health', '/auth/login']);
+
+  app.addHook('preHandler', async (request, reply) => {
+    if (publicPaths.has(request.url.split('?')[0] ?? '')) {
+      return;
+    }
+    const url = new URL(request.url, 'http://localhost');
+    const token =
+      authService.extractBearerToken(request.headers.authorization) ??
+      url.searchParams.get('token');
+    if (!token) {
+      return reply.status(401).send({ ok: false, message: '未登录或 token 缺失' });
+    }
+    const principal = authService.verifyToken(token);
+    if (!principal) {
+      return reply.status(401).send({ ok: false, message: 'token 无效或已过期' });
+    }
+    request.authUser = {
+      username: principal.username,
+      expiresAt: principal.expiresAt.toISOString()
+    };
+  });
+
+  app.post('/auth/login', async (request, reply) => {
+    const payload = loginSchema.parse(request.body);
+    const session = authService.login(payload.username, payload.password);
+    if (!session) {
+      return reply.status(401).send({ ok: false, message: '账号或密码错误' });
+    }
+    return reply.send({
+      ok: true,
+      token: session.token,
+      expiresAt: session.expiresAt,
+      username: payload.username
+    });
+  });
+
+  app.get('/auth/me', async (request, reply) => {
+    return reply.send({
+      ok: true,
+      user: request.authUser
+    });
   });
 
   app.post('/skills/sync', async (_request, reply) => {
@@ -127,6 +184,12 @@ export async function buildApp() {
   });
 
   app.get('/ws/runs/:runId', { websocket: true }, (socket, request) => {
+    const url = new URL(request.url, 'http://localhost');
+    const token = url.searchParams.get('token') ?? authService.extractBearerToken(request.headers.authorization);
+    if (!token || !authService.verifyToken(token)) {
+      socket.close(4001, 'unauthorized');
+      return;
+    }
     const params = request.params as { runId: string };
     const unsubscribe = eventBus.subscribe(params.runId, (message) => {
       socket.send(JSON.stringify(message));

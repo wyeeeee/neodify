@@ -1,4 +1,4 @@
-import type { DbContext } from '@neodify/db';
+import type { DbContext } from '../../db/index.js';
 import type { ConversationService } from '../conversations/conversation-service.js';
 import type { SkillRuntimeService } from '../skills/skill-runtime.service.js';
 import type { AgentProvider } from '../../providers/agent-provider.js';

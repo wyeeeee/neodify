@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { createDbContext } from '@neodify/db';
+import { createDbContext } from '../src/db/index.js';
 import { ScheduleService } from '../src/modules/schedules/schedule-service.js';
 
 let dbPath = '';
@@ -48,4 +48,3 @@ describe('ScheduleService', () => {
     }).toThrow('Cron 表达式不合法');
   });
 });
-

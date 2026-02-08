@@ -1,5 +1,5 @@
 import path from 'node:path';
-import type { DbContext } from '@neodify/db';
+import type { DbContext } from '../../db/index.js';
 
 export class ConversationService {
   constructor(private readonly db: DbContext, private readonly repoRoot: string) {}
@@ -30,4 +30,3 @@ export class ConversationService {
     this.db.conversationRepository.updateSessionId(conversationId, sessionId);
   }
 }
-

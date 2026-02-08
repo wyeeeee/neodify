@@ -14,11 +14,15 @@ export class SchedulerRunner {
     const schedules = this.scheduleService.listSchedules().filter((item) => item.enabled);
     for (const schedule of schedules) {
       const task = cron.schedule(schedule.cronExpr, async () => {
+        const renderedPrompt = String(schedule.inputTemplate.prompt ?? '').trim();
+        if (!renderedPrompt) {
+          return;
+        }
         await this.runService.execute({
           source: 'cron',
           agentId: schedule.agentId,
           conversationId: undefined,
-          prompt: String(schedule.inputTemplate.prompt ?? ''),
+          prompt: renderedPrompt,
           metadata: {
             scheduleId: schedule.id,
             scheduleName: schedule.name

@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { beforeEach, describe, expect, test } from 'vitest';
-import { createDbContext } from '@neodify/db';
+import { createDbContext } from '../src/db/index.js';
 import { SkillFileService } from '../src/modules/skills/skill-file.service.js';
 import { SkillService } from '../src/modules/skills/skill-service.js';
 
@@ -36,4 +36,3 @@ describe('SkillService sync', () => {
     expect(row?.enabled).toBe(false);
   });
 });
-

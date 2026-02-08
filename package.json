@@ -4,8 +4,7 @@
   "private": true,
   "description": "基于 Claude Agent SDK 的 Agent 调度框架",
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "apps/*"
   ],
   "scripts": {
     "dev:web": "npm run dev -w @neodify/web",
