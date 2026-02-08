@@ -18,8 +18,12 @@
 
 ## 环境变量
 
-- `VITE_API_BASE_URL`：登录 API 基地址，默认 `/api`（推荐使用 Vite 代理）
-- `VITE_API_PROXY_TARGET`：开发环境代理目标，默认 `http://127.0.0.1:3000`
+- 统一放在根目录 `env/web`：
+  - `env/web/.env.development`
+  - `env/web/.env.production`
+- 可从 `env/web/.env.*.example` 复制后修改
+- `VITE_API_BASE_URL`：登录 API 基地址，默认 `/api`
+- `VITE_API_PROXY_TARGET`：仅开发模式下使用的 Vite 代理目标
 
 ## 常用命令
 

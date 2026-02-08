@@ -28,6 +28,18 @@ Neodify 是一个基于 `Claude Agent SDK` 的生产级 Agent 调度框架（规
 - 一键构建：`npm run build`
 - 构建后一键启动（server + web preview）：`npm run start`
 
+## 环境变量目录（开发/生产分离）
+
+- `env/server/.env.development`、`env/server/.env.production`
+- `env/web/.env.development`、`env/web/.env.production`
+- 示例文件见 `env/**/*.env.example`，复制为对应 `.env` 后使用
+
+说明：
+
+- 前后端环境变量分开维护，但目录统一在根目录 `env/`
+- 开发模式：Web 使用 Vite 代理（`VITE_API_PROXY_TARGET`）
+- 生产模式：推荐 Nginx 反代 `/api`，Web 保持 `VITE_API_BASE_URL=/api`
+
 ## 下一步实施顺序
 
 1. 完成单用户登录与前端登录流程联动

@@ -23,7 +23,7 @@ describe('App Login Page', () => {
   test('should login successfully and render session info', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
-      json: async () => ({
+      text: async () => JSON.stringify({
         ok: true,
         token: 'token-123',
         expiresAt: '2026-12-31T00:00:00.000Z',

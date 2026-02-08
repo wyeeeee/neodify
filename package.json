@@ -7,13 +7,13 @@
     "apps/*"
   ],
   "scripts": {
-    "dev": "concurrently -n web,server -c cyan,green \"npm run dev -w @neodify/web\" \"npm run dev -w @neodify/server\"",
-    "start": "concurrently -n web,server -c cyan,green \"npm run preview -w @neodify/web -- --host 0.0.0.0 --port 4173\" \"npm run start -w @neodify/server\"",
-    "dev:web": "npm run dev -w @neodify/web",
-    "build:web": "npm run build -w @neodify/web",
+    "dev": "concurrently -n web,server -c cyan,green \"npm run dev -w @neodify/web -- --mode development\" \"cross-env NODE_ENV=development npm run dev -w @neodify/server\"",
+    "start": "concurrently -n web,server -c cyan,green \"npm run preview -w @neodify/web -- --host 0.0.0.0 --port 4173 --mode production\" \"cross-env NODE_ENV=production npm run start -w @neodify/server\"",
+    "dev:web": "npm run dev -w @neodify/web -- --mode development",
+    "build:web": "npm run build -w @neodify/web -- --mode production",
     "test:web": "npm run test -w @neodify/web",
     "lint:web": "npm run lint -w @neodify/web",
-    "dev:server": "npm run dev -w @neodify/server",
+    "dev:server": "cross-env NODE_ENV=development npm run dev -w @neodify/server",
     "build:server": "npm run build -w @neodify/server",
     "test:server": "npm run test -w @neodify/server",
     "lint:server": "npm run lint -w @neodify/server",
@@ -22,7 +22,8 @@
     "lint": "npm run lint --workspaces --if-present"
   },
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "cross-env": "^7.0.3"
   },
   "engines": {
     "node": ">=20.0.0"

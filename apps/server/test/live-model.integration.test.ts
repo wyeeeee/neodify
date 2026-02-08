@@ -5,7 +5,8 @@ import { describe, expect, test } from 'vitest';
 import { ClaudeAgentProvider } from '../src/providers/claude-agent-provider.js';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
-loadEnv({ path: path.resolve(currentDir, '../.env') });
+const rootDir = path.resolve(currentDir, '..', '..', '..');
+loadEnv({ path: path.resolve(rootDir, 'env', 'server', '.env.development') });
 
 const hasApiKey = Boolean(process.env.ANTHROPIC_API_KEY);
 const runLiveTest = hasApiKey ? test : test.skip;

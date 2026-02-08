@@ -35,7 +35,12 @@
 
 ## 环境变量
 
-请在 `apps/server/.env` 中配置（可从 `apps/server/.env.example` 复制）：
+请在根目录 `env/server` 下配置：
+
+- `env/server/.env.development`
+- `env/server/.env.production`
+
+可从 `env/server/.env.*.example` 复制后修改：
 
 - `ANTHROPIC_API_KEY`：Anthropic API Key（必填）
 - `DATABASE_URL`：SQLite 文件路径（相对 `apps/server`）
@@ -51,3 +56,4 @@
 - 单元/模块测试：`npm run test -w @neodify/server`
 - 真实模型联调测试：`npm run test:live -w @neodify/server`
 - `test:live` 会输出 `sessionId`、`totalCostUsd` 与模型回复正文，便于直接核对真实返回
+- `test:live` 默认读取 `env/server/.env.development`
