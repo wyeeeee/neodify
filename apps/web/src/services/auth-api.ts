@@ -8,16 +8,21 @@ interface LoginResponse {
   message?: string
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:3000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
 export async function login(payload: LoginRequest): Promise<AuthSession> {
-  const response = await fetch(`${API_BASE_URL}/auth/login`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  })
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}/auth/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    })
+  } catch {
+    throw new Error('网络请求失败，请确认前后端服务已启动且代理配置正确')
+  }
 
   const json = (await response.json()) as LoginResponse
   if (!response.ok || !json.ok || !json.token || !json.expiresAt || !json.username) {

@@ -22,6 +22,12 @@ Neodify 是一个基于 `Claude Agent SDK` 的生产级 Agent 调度框架（规
 - `PLAN.md`：V1 详细设计计划，包含标准 Skill 格式、架构、数据模型、模块划分、里程碑与验收标准。
 - `apps/server/src/db`：后端内置数据库层（schema + repository + type）。
 
+## 启动命令
+
+- 一键开发启动（前后端同时）：`npm run dev`
+- 一键构建：`npm run build`
+- 构建后一键启动（server + web preview）：`npm run start`
+
 ## 下一步实施顺序
 
 1. 完成单用户登录与前端登录流程联动

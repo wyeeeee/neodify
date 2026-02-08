@@ -7,6 +7,8 @@
     "apps/*"
   ],
   "scripts": {
+    "dev": "concurrently -n web,server -c cyan,green \"npm run dev -w @neodify/web\" \"npm run dev -w @neodify/server\"",
+    "start": "concurrently -n web,server -c cyan,green \"npm run preview -w @neodify/web -- --host 0.0.0.0 --port 4173\" \"npm run start -w @neodify/server\"",
     "dev:web": "npm run dev -w @neodify/web",
     "build:web": "npm run build -w @neodify/web",
     "test:web": "npm run test -w @neodify/web",
@@ -18,6 +20,9 @@
     "build": "npm run build --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   },
   "engines": {
     "node": ">=20.0.0"
