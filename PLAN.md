@@ -11,7 +11,7 @@
 - 支持多个 Agent，每个 Agent 独立配置 Skill 与 MCP
 - Skill 严格遵循 Anthropic Skill 规范（`SKILL.md`）
 - MCP 支持在线配置：`http`、`sse`、`uvx`、`npx`
-- ORM 统一使用 Drizzle，当前仅使用 SQLite
+- 数据库统一使用 SQLite，数据层内聚在 `apps/server/src/db`
 
 明确不做：
 
@@ -85,7 +85,7 @@ V1 规则：
    - Event Bus + WebSocket
 
 3. Storage
-   - SQLite（Drizzle ORM）
+   - SQLite（内置 repository）
    - Redis（可选，用于发布订阅与队列）
 
 ### 4.2 主链路
@@ -155,9 +155,11 @@ V1 规则：
   - `schedule.service.ts`
   - `schedule.worker.ts`
 
-- `packages/db`
-  - `schema/*`
-  - `client/*`
+- `apps/server/src/db`
+  - `schema.ts`
+  - `client.ts`
+  - `repositories.ts`
+  - `types.ts`
 
 ---
 
@@ -220,7 +222,7 @@ V1 规则：
 ### M1：基础脚手架
 
 - Monorepo 初始化（Web/Server/DB）
-- Drizzle + SQLite 跑通
+- SQLite 数据层跑通（`apps/server/src/db`）
 - 基础表：agents/skills/mcps/schedules/runs/run_events
 
 ### M2：Web 输入闭环
