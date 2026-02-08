@@ -25,5 +25,9 @@ describe('ClaudeAgentProvider live integration', () => {
     expect(result.sessionId).toBeTruthy();
     expect(result.text.trim().length).toBeGreaterThan(0);
     expect(result.events.length).toBeGreaterThan(0);
+
+    console.info('[live] sessionId:', result.sessionId);
+    console.info('[live] totalCostUsd:', result.totalCostUsd);
+    console.info('[live] reply:', result.text.trim());
   }, 120_000);
 });

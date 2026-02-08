@@ -44,3 +44,4 @@
 
 - 单元/模块测试：`npm run test -w @neodify/server`
 - 真实模型联调测试：`npm run test:live -w @neodify/server`
+- `test:live` 会输出 `sessionId`、`totalCostUsd` 与模型回复正文，便于直接核对真实返回
