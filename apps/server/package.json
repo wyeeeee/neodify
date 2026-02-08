@@ -8,6 +8,7 @@
     "build": "tsc -p tsconfig.json",
     "start": "node dist/main.js",
     "test": "vitest run",
+    "test:live": "vitest run test/live-model.integration.test.ts",
     "lint": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {

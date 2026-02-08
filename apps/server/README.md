@@ -39,3 +39,8 @@
 - `DATABASE_URL`：SQLite 文件路径（相对 `apps/server`）
 - `HOST`：监听地址（默认 `0.0.0.0`）
 - `PORT`：监听端口（默认 `3000`）
+
+## 测试命令
+
+- 单元/模块测试：`npm run test -w @neodify/server`
+- 真实模型联调测试：`npm run test:live -w @neodify/server`
