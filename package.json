@@ -2,7 +2,7 @@
   "name": "neodify",
   "version": "0.1.0",
   "private": true,
-  "description": "基于 Claude Agent SDK 的 Agent 调度框架",
+  "description": "基于 Claude Agent SDK 的 Agent 运行框架",
   "workspaces": [
     "apps/*"
   ],

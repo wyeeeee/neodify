@@ -1,6 +1,7 @@
 import type Database from 'better-sqlite3';
 
 const ddl = [
+  `DROP TABLE IF EXISTS schedules;`,
   `CREATE TABLE IF NOT EXISTS agents (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
@@ -49,16 +50,6 @@ const ddl = [
     enabled INTEGER NOT NULL,
     priority INTEGER NOT NULL,
     PRIMARY KEY (agent_id, mcp_id)
-  );`,
-  `CREATE TABLE IF NOT EXISTS schedules (
-    id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
-    cron_expr TEXT NOT NULL,
-    agent_id TEXT NOT NULL,
-    input_template_json TEXT NOT NULL,
-    enabled INTEGER NOT NULL,
-    next_run_at INTEGER,
-    last_run_at INTEGER
   );`,
   `CREATE TABLE IF NOT EXISTS conversations (
     id TEXT PRIMARY KEY,

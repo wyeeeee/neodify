@@ -42,15 +42,6 @@ export const createMcpSchema = z.object({
   timeoutMs: z.number().int().positive().default(30_000)
 });
 
-export const createScheduleSchema = z.object({
-  id: z.string().min(1),
-  name: z.string().min(1),
-  cronExpr: z.string().min(1),
-  agentId: z.string().min(1),
-  inputTemplate: z.record(z.string(), z.unknown()).default({}),
-  enabled: z.boolean().default(true)
-});
-
 export const runWebSchema = z.object({
   agentId: z.string().min(1),
   prompt: z.string().min(1),
@@ -68,7 +59,6 @@ export type CreateAgentDto = z.infer<typeof createAgentSchema>;
 export type CreateSkillDto = z.infer<typeof createSkillSchema>;
 export type UpdateSkillContentDto = z.infer<typeof updateSkillContentSchema>;
 export type CreateMcpDto = z.infer<typeof createMcpSchema>;
-export type CreateScheduleDto = z.infer<typeof createScheduleSchema>;
 export type RunWebDto = z.infer<typeof runWebSchema>;
 export type CreateConversationDto = z.infer<typeof createConversationSchema>;
 export type LoginDto = z.infer<typeof loginSchema>;

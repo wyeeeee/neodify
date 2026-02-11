@@ -7,7 +7,7 @@
 - 单用户登录与会话管理
 - Web 输入发起 Agent 运行
 - 实时展示 Run 事件日志与执行结果
-- 管理 Agent、Skill、MCP、Schedule 配置
+- 管理 Agent、Skill、MCP 配置
 
 ## 当前状态
 

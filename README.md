@@ -2,10 +2,10 @@
 
 ## 项目简介
 
-Neodify 是一个基于 `Claude Agent SDK` 的生产级 Agent 调度框架（规划中）。
+Neodify 是一个基于 `Claude Agent SDK` 的生产级 Agent 运行框架（规划中）。
 当前阶段聚焦：
 
-- 双输入模式：`Web 输入` 与 `定时任务输入（Cron）`
+- 单输入模式：`Web 输入`
 - 前后端技术栈：`TypeScript + Vue 3`
 - 可实时查看运行执行记录
 - 多 Agent 独立配置（每个 Agent 的 Skill/MCP 单独绑定）
@@ -44,5 +44,5 @@ Neodify 是一个基于 `Claude Agent SDK` 的生产级 Agent 调度框架（规
 
 1. 完成单用户登录与前端登录流程联动
 2. 打通 Web 输入到运行事件实时展示闭环
-3. 完成 Cron 输入、多 Agent、Skill（SKILL.md）管理、Prompt Studio 与 MCP 在线配置能力
+3. 完成多 Agent、Skill（SKILL.md）管理、Prompt Studio 与 MCP 在线配置能力
 4. 完成前端高信息密度控制台与配置管理页面

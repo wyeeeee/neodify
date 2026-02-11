@@ -7,7 +7,6 @@ import {
   McpRepository,
   RunEventRepository,
   RunRepository,
-  ScheduleRepository,
   SkillRepository
 } from './repositories.js';
 import { initializeSchema } from './schema.js';
@@ -20,7 +19,6 @@ export interface DbContext {
   agentMcpBindingRepository: AgentMcpBindingRepository;
   skillRepository: SkillRepository;
   mcpRepository: McpRepository;
-  scheduleRepository: ScheduleRepository;
   runRepository: RunRepository;
   runEventRepository: RunEventRepository;
   conversationRepository: ConversationRepository;
@@ -35,7 +33,6 @@ export function createDbContext(dbPath?: string): DbContext {
     agentMcpBindingRepository: new AgentMcpBindingRepository(db),
     skillRepository: new SkillRepository(db),
     mcpRepository: new McpRepository(db),
-    scheduleRepository: new ScheduleRepository(db),
     runRepository: new RunRepository(db),
     runEventRepository: new RunEventRepository(db),
     conversationRepository: new ConversationRepository(db)

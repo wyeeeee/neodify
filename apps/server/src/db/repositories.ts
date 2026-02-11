@@ -7,7 +7,6 @@ import type {
   McpRecord,
   RunEventRecord,
   RunRecord,
-  ScheduleRecord,
   SkillRecord
 } from './types.js';
 
@@ -215,63 +214,6 @@ export class McpRepository {
       createdAt: Number(row.created_at),
       updatedAt: Number(row.updated_at)
     };
-  }
-}
-
-export class ScheduleRepository {
-  constructor(private readonly db: Database.Database) {}
-
-  upsert(schedule: ScheduleRecord): void {
-    this.db
-      .prepare(
-        `INSERT INTO schedules (
-          id, name, cron_expr, agent_id, input_template_json, enabled, next_run_at, last_run_at
-        ) VALUES (
-          @id, @name, @cronExpr, @agentId, @inputTemplateJson, @enabled, @nextRunAt, @lastRunAt
-        )
-        ON CONFLICT(id) DO UPDATE SET
-          name = excluded.name,
-          cron_expr = excluded.cron_expr,
-          agent_id = excluded.agent_id,
-          input_template_json = excluded.input_template_json,
-          enabled = excluded.enabled,
-          next_run_at = excluded.next_run_at,
-          last_run_at = excluded.last_run_at;`
-      )
-      .run({
-        ...schedule,
-        enabled: schedule.enabled ? 1 : 0
-      });
-  }
-
-  listEnabled(): ScheduleRecord[] {
-    const rows = this.db
-      .prepare('SELECT * FROM schedules WHERE enabled = 1 ORDER BY name ASC')
-      .all() as Array<Record<string, unknown>>;
-    return rows.map((row) => ({
-      id: String(row.id),
-      name: String(row.name),
-      cronExpr: String(row.cron_expr),
-      agentId: String(row.agent_id),
-      inputTemplateJson: String(row.input_template_json),
-      enabled: Number(row.enabled) === 1,
-      nextRunAt: row.next_run_at === null ? null : Number(row.next_run_at),
-      lastRunAt: row.last_run_at === null ? null : Number(row.last_run_at)
-    }));
-  }
-
-  listAll(): ScheduleRecord[] {
-    const rows = this.db.prepare('SELECT * FROM schedules ORDER BY name ASC').all() as Array<Record<string, unknown>>;
-    return rows.map((row) => ({
-      id: String(row.id),
-      name: String(row.name),
-      cronExpr: String(row.cron_expr),
-      agentId: String(row.agent_id),
-      inputTemplateJson: String(row.input_template_json),
-      enabled: Number(row.enabled) === 1,
-      nextRunAt: row.next_run_at === null ? null : Number(row.next_run_at),
-      lastRunAt: row.last_run_at === null ? null : Number(row.last_run_at)
-    }));
   }
 }
 

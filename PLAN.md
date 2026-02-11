@@ -4,7 +4,7 @@
 
 本阶段只做可直接上线使用的单用户系统：
 
-- 输入模式仅两种：`Web 输入` 与 `Cron 定时输入`
+- 输入模式仅一种：`Web 输入`
 - 技术栈：`TypeScript + Vue 3`
 - 提供完整 Web 界面
 - 实时查看完整执行日志（输入、模型响应、Tool/MCP 调用、错误、耗时）
@@ -71,14 +71,13 @@ V1 规则：
 
 1. Frontend（Vue3 + TS）
    - Chat
-   - Schedules
    - Skills
    - MCPs
    - Runs / Run Detail（实时）
    - Prompt Studio
 
 2. Backend（Node.js + TS）
-   - Input Adapters（Web/Cron）
+   - Input Adapter（Web）
    - Agent Runtime（Claude Agent SDK）
    - Skill Loader（读取 SKILL.md）
    - MCP Connector（http/sse/uvx/npx）
@@ -111,11 +110,8 @@ V1 规则：
 - `agent_mcps`
   - `agent_id`, `mcp_id`, `enabled`, `priority`
 
-- `schedules`
-  - `id`, `name`, `cron_expr`, `agent_id`, `input_template_json`, `enabled`, `next_run_at`, `last_run_at`
-
 - `runs`
-  - `id`, `source(web|cron)`, `agent_id`, `status`, `input_json`, `output_json`, `error_msg`, `started_at`, `ended_at`, `latency_ms`, `cost_json`
+  - `id`, `source(web)`, `agent_id`, `status`, `input_json`, `output_json`, `error_msg`, `started_at`, `ended_at`, `latency_ms`, `cost_json`
 
 - `run_events`
   - `id`, `run_id`, `seq`, `event_type`, `payload_json`, `created_at`
@@ -126,7 +122,6 @@ V1 规则：
 
 - `apps/server/src/modules/adapters`
   - `web.adapter.ts`
-  - `cron.adapter.ts`
 
 - `apps/server/src/modules/agents`
   - `agent.registry.ts`
@@ -151,10 +146,6 @@ V1 规则：
   - `run.service.ts`
   - `event.service.ts`
 
-- `apps/server/src/modules/schedule`
-  - `schedule.service.ts`
-  - `schedule.worker.ts`
-
 - `apps/server/src/db`
   - `schema.ts`
   - `client.ts`
@@ -167,9 +158,6 @@ V1 规则：
 
 - `apps/web/src/pages/chat`
   - 对话输入、Agent 选择、流式输出、事件流
-
-- `apps/web/src/pages/schedules`
-  - Cron 列表、增删改、启停、手动触发
 
 - `apps/web/src/pages/skills`
   - Skill 列表、SKILL.md 编辑、结构预览
@@ -223,35 +211,31 @@ V1 规则：
 
 - Monorepo 初始化（Web/Server/DB）
 - SQLite 数据层跑通（`apps/server/src/db`）
-- 基础表：agents/skills/mcps/schedules/runs/run_events
+- 基础表：agents/skills/mcps/runs/run_events
 
 ### M2：Web 输入闭环
 
 - Chat API -> Claude Agent SDK -> run_events -> 前端实时展示
 
-### M3：Cron 输入闭环
-
-- Cron CRUD + 调度触发 + 运行记录
-
-### M4：Skill 管理（标准 SKILL.md）
+### M3：Skill 管理（标准 SKILL.md）
 
 - Skill 新建/编辑/预览
 - Skill Loader 按标准目录装配
 - Agent 绑定 Skill
 
-### M5：Prompt Studio
+### M4：Prompt Studio
 
 - Markdown 编辑/预览/高亮
 - 变量插入
 - 一键试跑
 
-### M6：MCP 在线配置
+### M5：MCP 在线配置
 
 - http/sse/uvx/npx 配置
 - 连通性测试
 - Agent 绑定 MCP 并运行
 
-### M7：数据库重建切换策略
+### M6：数据库重建切换策略
 
 - SQLite 阶段按当前 schema 运行
 - 切换数据库时采用破坏式重建（重新建库建表）
@@ -265,5 +249,5 @@ V1 规则：
 - 可创建多个 Agent，分别绑定 Skill 与 MCP
 - Prompt Studio 可完成 Markdown 编辑、预览和高亮
 - MCP 支持 `http/sse/uvx/npx` 在线配置与连通性测试
-- Web 与 Cron 两种输入均可触发运行
+- Web 输入可触发运行
 - 运行全过程可在 UI 实时查看与回放

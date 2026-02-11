@@ -1,6 +1,6 @@
 export type McpMode = 'http' | 'sse' | 'uvx' | 'npx';
 
-export type RunSource = 'web' | 'cron';
+export type RunSource = 'web';
 
 export type RunStatus = 'running' | 'completed' | 'failed' | 'cancelled';
 
@@ -40,17 +40,6 @@ export interface McpRecord {
   timeoutMs: number;
   createdAt: number;
   updatedAt: number;
-}
-
-export interface ScheduleRecord {
-  id: string;
-  name: string;
-  cronExpr: string;
-  agentId: string;
-  inputTemplateJson: string;
-  enabled: boolean;
-  nextRunAt: number | null;
-  lastRunAt: number | null;
 }
 
 export interface ConversationRecord {

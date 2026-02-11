@@ -7,7 +7,6 @@ import {
   createAgentSchema,
   createConversationSchema,
   createMcpSchema,
-  createScheduleSchema,
   createSkillSchema,
   loginSchema,
   runWebSchema,
@@ -18,8 +17,6 @@ import { ConversationService } from './modules/conversations/conversation-servic
 import { McpService } from './modules/mcp/mcp-service.js';
 import { RunEventBus } from './modules/runs/run-event-bus.js';
 import { RunService } from './modules/runs/run-service.js';
-import { ScheduleService } from './modules/schedules/schedule-service.js';
-import { SchedulerRunner } from './modules/schedules/scheduler-runner.js';
 import { SkillFileService } from './modules/skills/skill-file.service.js';
 import { SkillRuntimeService } from './modules/skills/skill-runtime.service.js';
 import { SkillService } from './modules/skills/skill-service.js';
@@ -56,12 +53,9 @@ export async function buildApp() {
   const eventBus = new RunEventBus();
   const provider = new ClaudeAgentProvider();
   const runService = new RunService(db, agentService, conversationService, skillRuntimeService, provider, eventBus);
-  const scheduleService = new ScheduleService(db);
-  const schedulerRunner = new SchedulerRunner(scheduleService, runService);
 
   app.addHook('onReady', async () => {
     skillService.syncMissingSkillsToDisabled();
-    schedulerRunner.start();
   });
 
   const publicPaths = new Set(['/health', '/auth/login']);
@@ -119,10 +113,6 @@ export async function buildApp() {
     return reply.send({ ok: true });
   });
 
-  app.addHook('onClose', async () => {
-    schedulerRunner.stop();
-  });
-
   app.get('/health', async () => ({ ok: true }));
 
   app.get('/agents', async () => agentService.listEnabledAgents());
@@ -149,15 +139,6 @@ export async function buildApp() {
   app.post('/mcps', async (request, reply) => {
     const payload = createMcpSchema.parse(request.body);
     mcpService.saveMcp(payload);
-    return reply.send({ ok: true });
-  });
-
-  app.get('/schedules', async () => scheduleService.listSchedules());
-  app.post('/schedules', async (request, reply) => {
-    const payload = createScheduleSchema.parse(request.body);
-    scheduleService.saveSchedule(payload);
-    schedulerRunner.stop();
-    schedulerRunner.start();
     return reply.send({ ok: true });
   });
 
