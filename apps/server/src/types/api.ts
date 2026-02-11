@@ -46,13 +46,8 @@ export const invokeRunSchema = z.object({
   agentId: z.string().min(1),
   prompt: z.string().min(1),
   conversationId: z.string().min(1).optional(),
+  conversationTitle: z.string().min(1).optional(),
   metadata: z.record(z.string(), z.unknown()).default({})
-});
-
-export const createConversationSchema = z.object({
-  id: z.string().min(1),
-  agentId: z.string().min(1),
-  title: z.string().min(1)
 });
 
 export type CreateAgentDto = z.infer<typeof createAgentSchema>;
@@ -60,5 +55,4 @@ export type CreateSkillDto = z.infer<typeof createSkillSchema>;
 export type UpdateSkillContentDto = z.infer<typeof updateSkillContentSchema>;
 export type CreateMcpDto = z.infer<typeof createMcpSchema>;
 export type InvokeRunDto = z.infer<typeof invokeRunSchema>;
-export type CreateConversationDto = z.infer<typeof createConversationSchema>;
 export type LoginDto = z.infer<typeof loginSchema>;

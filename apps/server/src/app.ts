@@ -6,7 +6,6 @@ import websocket from '@fastify/websocket';
 import { createDbContext } from './db/index.js';
 import {
   createAgentSchema,
-  createConversationSchema,
   invokeRunSchema,
   createMcpSchema,
   createSkillSchema,
@@ -42,6 +41,23 @@ function safeEqualString(left: string, right: string): boolean {
   return crypto.timingSafeEqual(leftBuffer, rightBuffer);
 }
 
+function parseFirstHeaderValue(value: string | string[] | undefined): string | undefined {
+  if (typeof value === 'string') {
+    return value;
+  }
+  if (Array.isArray(value)) {
+    return value[0];
+  }
+  return undefined;
+}
+
+function verifyServiceApiKey(providedApiKey: string | undefined, expectedApiKey: string | undefined): boolean {
+  if (!providedApiKey || !expectedApiKey) {
+    return false;
+  }
+  return safeEqualString(providedApiKey, expectedApiKey);
+}
+
 export async function buildApp() {
   const app = Fastify({ logger: true });
   await app.register(cors, { origin: true });
@@ -69,6 +85,7 @@ export async function buildApp() {
   });
 
   const publicPaths = new Set(['/health', '/auth/login']);
+  const servicePaths = new Set(['/runs/invoke']);
 
   app.addHook('preHandler', async (request, reply) => {
     const requestPath = request.url.split('?')[0] ?? '';
@@ -76,32 +93,37 @@ export async function buildApp() {
       return;
     }
 
-    if (requestPath === '/runs/invoke') {
-      const expectedApiKey = process.env.RUN_INVOKE_API_KEY?.trim();
-      if (!expectedApiKey) {
-        return reply.status(500).send({ ok: false, message: 'RUN_INVOKE_API_KEY 未配置' });
-      }
-      const providedApiKeyHeader = request.headers['x-api-key'];
-      const providedApiKey =
-        typeof providedApiKeyHeader === 'string'
-          ? providedApiKeyHeader
-          : Array.isArray(providedApiKeyHeader)
-            ? providedApiKeyHeader[0]
-            : undefined;
-      if (!providedApiKey || !safeEqualString(providedApiKey, expectedApiKey)) {
-        return reply.status(401).send({ ok: false, message: '服务调用鉴权失败（X-API-Key 无效）' });
-      }
-      return;
-    }
-
     const url = new URL(request.url, 'http://localhost');
     const token =
       authService.extractBearerToken(request.headers.authorization) ??
       url.searchParams.get('token');
+    const principal = token ? authService.verifyToken(token) : null;
+
+    const isServiceRoute =
+      servicePaths.has(requestPath) || requestPath.startsWith('/runs/') || requestPath.startsWith('/ws/runs/');
+
+    if (isServiceRoute) {
+      const expectedApiKey = process.env.RUN_INVOKE_API_KEY?.trim();
+      const providedApiKey = parseFirstHeaderValue(request.headers['x-api-key']);
+      if (verifyServiceApiKey(providedApiKey, expectedApiKey)) {
+        return;
+      }
+      if (principal) {
+        request.authUser = {
+          username: principal.username,
+          expiresAt: principal.expiresAt.toISOString()
+        };
+        return;
+      }
+      if (!expectedApiKey) {
+        return reply.status(500).send({ ok: false, message: 'RUN_INVOKE_API_KEY 未配置' });
+      }
+      return reply.status(401).send({ ok: false, message: '服务调用鉴权失败（X-API-Key 无效）' });
+    }
+
     if (!token) {
       return reply.status(401).send({ ok: false, message: '未登录或 token 缺失' });
     }
-    const principal = authService.verifyToken(token);
     if (!principal) {
       return reply.status(401).send({ ok: false, message: 'token 无效或已过期' });
     }
@@ -134,12 +156,6 @@ export async function buildApp() {
 
   app.post('/skills/sync', async (_request, reply) => {
     skillService.syncMissingSkillsToDisabled();
-    return reply.send({ ok: true });
-  });
-
-  app.post('/conversations', async (request, reply) => {
-    const payload = createConversationSchema.parse(request.body);
-    conversationService.createConversation(payload);
     return reply.send({ ok: true });
   });
 
@@ -178,10 +194,11 @@ export async function buildApp() {
       source: 'api',
       agentId: payload.agentId,
       conversationId: payload.conversationId,
+      conversationTitle: payload.conversationTitle,
       prompt: payload.prompt,
       metadata: payload.metadata
     });
-    return reply.send({ ok: true, runId: result.runId });
+    return reply.send({ ok: true, runId: result.runId, conversationId: result.conversationId });
   });
 
   app.get('/runs/:runId', async (request, reply) => {
@@ -195,7 +212,17 @@ export async function buildApp() {
   });
 
   app.get('/ws/runs/:runId', { websocket: true }, (socket, request) => {
+    const expectedApiKey = process.env.RUN_INVOKE_API_KEY?.trim();
     const url = new URL(request.url, 'http://localhost');
+    const providedApiKey = parseFirstHeaderValue(request.headers['x-api-key']) ?? (url.searchParams.get('apiKey') ?? undefined);
+    if (verifyServiceApiKey(providedApiKey, expectedApiKey)) {
+      const params = request.params as { runId: string };
+      const unsubscribe = eventBus.subscribe(params.runId, (message) => {
+        socket.send(JSON.stringify(message));
+      });
+      socket.on('close', () => unsubscribe());
+      return;
+    }
     const token = url.searchParams.get('token') ?? authService.extractBearerToken(request.headers.authorization);
     if (!token || !authService.verifyToken(token)) {
       socket.close(4001, 'unauthorized');

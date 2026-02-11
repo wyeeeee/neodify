@@ -26,23 +26,27 @@ export class RunService {
     this.bus.publish({ runId, seq, eventType, payload, createdAt });
   }
 
-  async execute(input: RunInput): Promise<{ runId: string }> {
+  async execute(input: RunInput & { conversationTitle?: string }): Promise<{ runId: string; conversationId: string }> {
     const runId = createRunId();
+    let effectiveConversationId = '';
     await this.guard.withLock(runId, async () => {
       let seq = 0;
       const startedAt = Date.now();
-      const conversation = input.conversationId
-        ? this.conversationService.getConversation(input.conversationId)
-        : null;
+      const conversation = this.conversationService.ensureConversation({
+        conversationId: input.conversationId,
+        agentId: input.agentId,
+        title: input.conversationTitle
+      });
+      effectiveConversationId = conversation.id;
 
-      const turnIndex = conversation ? this.conversationService.nextTurnIndex(conversation.id) : 1;
+      const turnIndex = this.conversationService.nextTurnIndex(conversation.id);
       this.db.runRepository.create({
         id: runId,
         source: input.source,
         agentId: input.agentId,
-        conversationId: conversation?.id ?? null,
+        conversationId: conversation.id,
         turnIndex,
-        sdkSessionId: conversation?.sdkSessionId ?? null,
+        sdkSessionId: conversation.sdkSessionId,
         status: 'running',
         inputJson: JSON.stringify({ prompt: input.prompt, metadata: input.metadata }),
         outputJson: null,
@@ -62,9 +66,7 @@ export class RunService {
           mcpCount: resolved.mcps.length
         });
 
-        const runCwd = conversation
-          ? this.skillRuntimeService.prepareConversationCwd(conversation.id, conversation.cwd, resolved.skills)
-          : this.skillRuntimeService.prepareRunCwd(runId, resolved.skills);
+        const runCwd = this.skillRuntimeService.prepareConversationCwd(conversation.id, conversation.cwd, resolved.skills);
         this.appendEvent(runId, ++seq, 'skill.runtime_prepared', {
           runCwd,
           skillCount: resolved.skills.length
@@ -77,10 +79,10 @@ export class RunService {
           maxTokens: resolved.agent.maxTokens,
           mcpList: resolved.mcps,
           cwd: runCwd,
-          resumeSessionId: conversation?.sdkSessionId ?? undefined
+          resumeSessionId: conversation.sdkSessionId ?? undefined
         });
 
-        if (conversation && result.sessionId) {
+        if (result.sessionId) {
           this.conversationService.updateSessionId(conversation.id, result.sessionId);
           this.db.runRepository.updateSdkSessionId(runId, result.sessionId);
         }
@@ -113,6 +115,6 @@ export class RunService {
       }
     });
 
-    return { runId };
+    return { runId, conversationId: effectiveConversationId };
   }
 }

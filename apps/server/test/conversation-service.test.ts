@@ -25,4 +25,33 @@ describe('ConversationService', () => {
     expect(conversation?.id).toBe('conv-1');
     expect(conversation?.cwd).toContain('.runtime');
   });
+
+  test('should auto create conversation when missing id', () => {
+    const db = createDbContext(dbPath);
+    const repoRoot = path.resolve(process.cwd(), '..', '..');
+    const service = new ConversationService(db, repoRoot);
+
+    const conversation = service.ensureConversation({
+      agentId: 'agent-1',
+      title: '自动创建会话'
+    });
+
+    expect(conversation.id.startsWith('conv_')).toBe(true);
+    expect(conversation.agentId).toBe('agent-1');
+  });
+
+  test('should auto create conversation when id not exists', () => {
+    const db = createDbContext(dbPath);
+    const repoRoot = path.resolve(process.cwd(), '..', '..');
+    const service = new ConversationService(db, repoRoot);
+
+    const conversation = service.ensureConversation({
+      conversationId: 'conv-external-001',
+      agentId: 'agent-1',
+      title: '外部ID会话'
+    });
+
+    expect(conversation.id).toBe('conv-external-001');
+    expect(conversation.title).toBe('外部ID会话');
+  });
 });

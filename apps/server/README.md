@@ -20,18 +20,18 @@
 ## 当前已实现
 
 - Fastify API：Agent / Skill / MCP / Run 的基础接口
-- Run 调用入口：`POST /runs/invoke`
-- `POST /runs/invoke` 使用 `X-API-Key` 服务鉴权，适配外部系统调用
+- 运行相关接口：`POST /runs/invoke`、`GET /runs/:runId`、`GET /ws/runs/:runId`
+- 运行相关接口优先使用 `X-API-Key`，同时兼容 Bearer Token（管理端调试）
 - SDK 抽象层：`AgentProvider` 接口 + `ClaudeAgentProvider` 实现（后续可替换）
 - Run 执行链路：Run 入库、事件入库、执行状态更新
 - WebSocket 实时事件：`/ws/runs/:runId`
 - Skill 官方接入：运行时投影到 `.runtime/runs/<runId>/.claude/skills/*/SKILL.md` 并由 SDK 官方参数加载
 - Skill 同步：本地文件缺失时自动将数据库 Skill 标记为 `disabled`
-- 多轮会话：`conversation` 维度复用 SDK session（`resume`）
+- 多轮会话：`/runs/invoke` 自动创建或复用 `conversation`，并复用 SDK session（`resume`）
 - 每轮新 Run：同一会话下每次用户消息都会创建新 run 记录（turn_index 递增）
 - 会话级 Skill 复用：Skill 投影到 `.runtime/conversations/<conversationId>/.claude/skills`
 - Claude SDK 已破坏性切换至 TypeScript V2（`createSession/resumeSession/send/stream`）
-- 单用户登录鉴权：`/auth/login` + Bearer Token 保护 API 与 WebSocket
+- 单用户登录鉴权：`/auth/login` + Bearer Token 保护管理类 API
 - 测试：DB 仓储、鉴权、Skill 文件服务、事件总线
 
 ## 环境变量
