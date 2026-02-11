@@ -33,7 +33,7 @@ export interface McpConfig {
 }
 
 export interface RunInput {
-  source: 'web';
+  source: 'api';
   agentId: string;
   conversationId?: string;
   prompt: string;

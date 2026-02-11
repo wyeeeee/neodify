@@ -4,7 +4,7 @@
 
 `apps/server` 是后端服务模块，负责：
 
-- 提供 Web 输入 API
+- 提供服务调用 API（Invoke）
 - 执行 Agent 运行流程（通过 SDK 抽象层）
 - 记录运行事件并通过 WebSocket 实时推送
 - 管理 Agent、Skill、MCP 的后端逻辑
@@ -20,6 +20,8 @@
 ## 当前已实现
 
 - Fastify API：Agent / Skill / MCP / Run 的基础接口
+- Run 调用入口：`POST /runs/invoke`
+- `POST /runs/invoke` 使用 `X-API-Key` 服务鉴权，适配外部系统调用
 - SDK 抽象层：`AgentProvider` 接口 + `ClaudeAgentProvider` 实现（后续可替换）
 - Run 执行链路：Run 入库、事件入库、执行状态更新
 - WebSocket 实时事件：`/ws/runs/:runId`
@@ -49,6 +51,7 @@
 - `AUTH_PASSWORD`：登录密码（必填）
 - `AUTH_TOKEN_SECRET`：Token 签名密钥（必填）
 - `AUTH_TOKEN_TTL_SEC`：Token 有效期秒数（默认 `86400`）
+- `RUN_INVOKE_API_KEY`：服务调用入口 `/runs/invoke` 的 API Key（必填）
 
 ## 测试命令
 

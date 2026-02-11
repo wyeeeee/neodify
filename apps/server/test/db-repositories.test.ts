@@ -39,7 +39,7 @@ describe('db repositories', () => {
     const db = createDbContext(dbPath);
     db.runRepository.create({
       id: 'run-1',
-      source: 'web',
+      source: 'api',
       agentId: 'agent-1',
       conversationId: null,
       turnIndex: 1,
@@ -87,7 +87,7 @@ describe('db repositories', () => {
 
     db.runRepository.create({
       id: 'run-a',
-      source: 'web',
+      source: 'api',
       agentId: 'agent-1',
       conversationId: 'conv-1',
       turnIndex: 1,

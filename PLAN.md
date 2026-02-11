@@ -4,7 +4,7 @@
 
 本阶段只做可直接上线使用的单用户系统：
 
-- 输入模式仅一种：`Web 输入`
+- 输入模式仅一种：`服务接口输入（API Invoke）`
 - 技术栈：`TypeScript + Vue 3`
 - 提供完整 Web 界面
 - 实时查看完整执行日志（输入、模型响应、Tool/MCP 调用、错误、耗时）
@@ -77,7 +77,7 @@ V1 规则：
    - Prompt Studio
 
 2. Backend（Node.js + TS）
-   - Input Adapter（Web）
+   - Input Adapter（API Invoke）
    - Agent Runtime（Claude Agent SDK）
    - Skill Loader（读取 SKILL.md）
    - MCP Connector（http/sse/uvx/npx）
@@ -111,7 +111,7 @@ V1 规则：
   - `agent_id`, `mcp_id`, `enabled`, `priority`
 
 - `runs`
-  - `id`, `source(web)`, `agent_id`, `status`, `input_json`, `output_json`, `error_msg`, `started_at`, `ended_at`, `latency_ms`, `cost_json`
+  - `id`, `source(api)`, `agent_id`, `status`, `input_json`, `output_json`, `error_msg`, `started_at`, `ended_at`, `latency_ms`, `cost_json`
 
 - `run_events`
   - `id`, `run_id`, `seq`, `event_type`, `payload_json`, `created_at`
@@ -213,9 +213,9 @@ V1 规则：
 - SQLite 数据层跑通（`apps/server/src/db`）
 - 基础表：agents/skills/mcps/runs/run_events
 
-### M2：Web 输入闭环
+### M2：服务调用输入闭环
 
-- Chat API -> Claude Agent SDK -> run_events -> 前端实时展示
+- Invoke API -> Claude Agent SDK -> run_events -> 前端实时展示
 
 ### M3：Skill 管理（标准 SKILL.md）
 
@@ -249,5 +249,5 @@ V1 规则：
 - 可创建多个 Agent，分别绑定 Skill 与 MCP
 - Prompt Studio 可完成 Markdown 编辑、预览和高亮
 - MCP 支持 `http/sse/uvx/npx` 在线配置与连通性测试
-- Web 输入可触发运行
+- 服务接口输入可触发运行
 - 运行全过程可在 UI 实时查看与回放

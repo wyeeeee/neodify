@@ -42,7 +42,7 @@ export const createMcpSchema = z.object({
   timeoutMs: z.number().int().positive().default(30_000)
 });
 
-export const runWebSchema = z.object({
+export const invokeRunSchema = z.object({
   agentId: z.string().min(1),
   prompt: z.string().min(1),
   conversationId: z.string().min(1).optional(),
@@ -59,6 +59,6 @@ export type CreateAgentDto = z.infer<typeof createAgentSchema>;
 export type CreateSkillDto = z.infer<typeof createSkillSchema>;
 export type UpdateSkillContentDto = z.infer<typeof updateSkillContentSchema>;
 export type CreateMcpDto = z.infer<typeof createMcpSchema>;
-export type RunWebDto = z.infer<typeof runWebSchema>;
+export type InvokeRunDto = z.infer<typeof invokeRunSchema>;
 export type CreateConversationDto = z.infer<typeof createConversationSchema>;
 export type LoginDto = z.infer<typeof loginSchema>;

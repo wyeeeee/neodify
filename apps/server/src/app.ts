@@ -1,3 +1,4 @@
+import crypto from 'node:crypto';
 import path from 'node:path';
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
@@ -6,10 +7,10 @@ import { createDbContext } from './db/index.js';
 import {
   createAgentSchema,
   createConversationSchema,
+  invokeRunSchema,
   createMcpSchema,
   createSkillSchema,
   loginSchema,
-  runWebSchema,
   updateSkillContentSchema
 } from './types/api.js';
 import { AgentService } from './modules/agents/agent-service.js';
@@ -30,6 +31,15 @@ declare module 'fastify' {
       expiresAt: string;
     };
   }
+}
+
+function safeEqualString(left: string, right: string): boolean {
+  const leftBuffer = Buffer.from(left, 'utf8');
+  const rightBuffer = Buffer.from(right, 'utf8');
+  if (leftBuffer.length !== rightBuffer.length) {
+    return false;
+  }
+  return crypto.timingSafeEqual(leftBuffer, rightBuffer);
 }
 
 export async function buildApp() {
@@ -61,9 +71,29 @@ export async function buildApp() {
   const publicPaths = new Set(['/health', '/auth/login']);
 
   app.addHook('preHandler', async (request, reply) => {
-    if (publicPaths.has(request.url.split('?')[0] ?? '')) {
+    const requestPath = request.url.split('?')[0] ?? '';
+    if (publicPaths.has(requestPath)) {
       return;
     }
+
+    if (requestPath === '/runs/invoke') {
+      const expectedApiKey = process.env.RUN_INVOKE_API_KEY?.trim();
+      if (!expectedApiKey) {
+        return reply.status(500).send({ ok: false, message: 'RUN_INVOKE_API_KEY 未配置' });
+      }
+      const providedApiKeyHeader = request.headers['x-api-key'];
+      const providedApiKey =
+        typeof providedApiKeyHeader === 'string'
+          ? providedApiKeyHeader
+          : Array.isArray(providedApiKeyHeader)
+            ? providedApiKeyHeader[0]
+            : undefined;
+      if (!providedApiKey || !safeEqualString(providedApiKey, expectedApiKey)) {
+        return reply.status(401).send({ ok: false, message: '服务调用鉴权失败（X-API-Key 无效）' });
+      }
+      return;
+    }
+
     const url = new URL(request.url, 'http://localhost');
     const token =
       authService.extractBearerToken(request.headers.authorization) ??
@@ -142,10 +172,10 @@ export async function buildApp() {
     return reply.send({ ok: true });
   });
 
-  app.post('/runs/web', async (request, reply) => {
-    const payload = runWebSchema.parse(request.body);
+  app.post('/runs/invoke', async (request, reply) => {
+    const payload = invokeRunSchema.parse(request.body);
     const result = await runService.execute({
-      source: 'web',
+      source: 'api',
       agentId: payload.agentId,
       conversationId: payload.conversationId,
       prompt: payload.prompt,

@@ -1,6 +1,6 @@
 export type McpMode = 'http' | 'sse' | 'uvx' | 'npx';
 
-export type RunSource = 'web';
+export type RunSource = 'api';
 
 export type RunStatus = 'running' | 'completed' | 'failed' | 'cancelled';
 
