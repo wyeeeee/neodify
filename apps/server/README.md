@@ -28,11 +28,12 @@
 - Run 执行链路：Run 入库、事件入库、执行状态更新
 - WebSocket 实时事件：`/ws/runs/:runId`
 - Skill 官方接入：运行时投影到 `.runtime/runs/<runId>/.claude/skills/*/SKILL.md` 并由 SDK 官方参数加载
-- Skill 同步：本地文件缺失时自动将数据库 Skill 标记为 `disabled`
+- Skill 同步：启动后与运行期自动对齐本地 `skills/*/SKILL.md`（新增自动入库启用、缺失自动禁用）
 - 多轮会话：`/runs/invoke` 自动创建或复用 `conversation`，并复用 SDK session（`resume`）
 - 每轮新 Run：同一会话下每次用户消息都会创建新 run 记录（turn_index 递增）
 - 会话级 Skill 复用：Skill 投影到 `.runtime/conversations/<conversationId>/.claude/skills`
 - Claude SDK 已切换至稳定 V1 `query` 调用通道（支持 `cwd`、`resume`、`mcpServers`、`systemPrompt`）
+- MCP 工具权限已自动放行：对每个已启用 MCP 服务注入 `allowedTools = mcp__<server-id>__*`
 - 单用户登录鉴权：`/auth/login` + Bearer Token 保护管理类 API
 - 运行事件增强：已落库工具调用链路事件（`agent.tool.call`、`agent.tool.progress`、`agent.tool.result`、`agent.tool.summary`）
 - 开发日志美化：`NODE_ENV!=production` 时启用 `pino-pretty` 便于本地排查
@@ -56,6 +57,7 @@
 - `AUTH_TOKEN_SECRET`：Token 签名密钥（必填）
 - `AUTH_TOKEN_TTL_SEC`：Token 有效期秒数（默认 `86400`）
 - `RUN_INVOKE_API_KEY`：服务调用入口 `/runs/invoke` 的 API Key（必填）
+- `SKILL_AUTO_SYNC_INTERVAL_MS`：Skill 文件自动对齐间隔毫秒（默认 `3000`，最小 `1000`）
 
 ## 测试命令
 

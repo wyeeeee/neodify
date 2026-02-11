@@ -28,6 +28,7 @@ Neodify 是一个基于 `Claude Agent SDK` 的生产级 Agent 运行框架（规
 - `POST /runs/invoke` 采用异步受理语义，先返回 `runId/conversationId`，结果通过查询或事件流获取。
 - 运行事件已增强，`run_events` 可保留工具调用链路（`agent.tool.call/progress/result/summary`）。
 - 后端开发模式日志启用美化输出（`pino-pretty`），便于本地调试与排障。
+- Skill 配置支持自动对齐本地文件：`skills/*/SKILL.md` 新增自动入库启用、缺失自动禁用（默认每 3 秒同步一次）。
 
 ## 启动命令
 

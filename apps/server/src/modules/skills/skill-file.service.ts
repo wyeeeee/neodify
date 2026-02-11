@@ -60,4 +60,22 @@ export class SkillFileService {
   resolvePath(skillId: string): { rootPath: string; skillMdPath: string } {
     return resolveSafePath(skillId);
   }
+
+  listLocalSkillIds(): string[] {
+    if (!fs.existsSync(PROJECT_SKILLS_ROOT)) {
+      return [];
+    }
+    const entries = fs.readdirSync(PROJECT_SKILLS_ROOT, { withFileTypes: true });
+    const result: string[] = [];
+    for (const entry of entries) {
+      if (!entry.isDirectory()) {
+        continue;
+      }
+      const { skillMdPath } = resolveSafePath(entry.name);
+      if (fs.existsSync(skillMdPath)) {
+        result.push(entry.name);
+      }
+    }
+    return result;
+  }
 }

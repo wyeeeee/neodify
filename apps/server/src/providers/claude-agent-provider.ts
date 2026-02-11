@@ -191,6 +191,12 @@ function toMcpConfig(mcpList: AgentProviderInput['mcpList']): Record<string, Mcp
   return result;
 }
 
+function buildAllowedTools(mcpList: AgentProviderInput['mcpList']): string[] {
+  const baseTools = ['Skill', 'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep'];
+  const mcpTools = mcpList.filter((item) => item.enabled).map((item) => `mcp__${item.id}__*`);
+  return Array.from(new Set([...baseTools, ...mcpTools]));
+}
+
 export class ClaudeAgentProvider implements AgentProvider {
   async run(input: AgentProviderInput): Promise<RunResult> {
     const events: RunResult['events'] = [];
@@ -210,7 +216,7 @@ export class ClaudeAgentProvider implements AgentProvider {
     const options = {
       cwd: input.cwd,
       settingSources: ['project'] as SettingSource[],
-      allowedTools: ['Skill', 'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep'],
+      allowedTools: buildAllowedTools(input.mcpList),
       sandbox: {
         enabled: true,
         autoAllowBashIfSandboxed: true,

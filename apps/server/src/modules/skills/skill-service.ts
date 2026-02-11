@@ -36,7 +36,7 @@ export class SkillService {
   }
 
   listEnabledSkills(): Array<SkillConfig & { skillMdContent: string }> {
-    this.syncMissingSkillsToDisabled();
+    this.syncLocalSkillsToDatabase();
     return this.db.skillRepository.listEnabled().map((item) => ({
       id: item.id,
       name: item.name,
@@ -47,13 +47,46 @@ export class SkillService {
     }));
   }
 
-  syncMissingSkillsToDisabled(): void {
+  syncLocalSkillsToDatabase(): void {
+    const now = Date.now();
+    const localSkillIds = new Set(this.skillFileService.listLocalSkillIds());
     const allSkills = this.db.skillRepository.listAll();
+    const dbSkillMap = new Map(allSkills.map((item) => [item.id, item]));
+
+    for (const skillId of localSkillIds) {
+      const paths = this.skillFileService.resolvePath(skillId);
+      const current = dbSkillMap.get(skillId);
+      if (!current) {
+        this.db.skillRepository.upsert({
+          id: skillId,
+          name: skillId,
+          rootPath: paths.rootPath,
+          skillMdPath: paths.skillMdPath,
+          enabled: true,
+          createdAt: now,
+          updatedAt: now
+        });
+        continue;
+      }
+
+      const pathChanged = current.rootPath !== paths.rootPath || current.skillMdPath !== paths.skillMdPath;
+      const needEnable = !current.enabled;
+      if (pathChanged || needEnable) {
+        this.db.skillRepository.upsert({
+          ...current,
+          rootPath: paths.rootPath,
+          skillMdPath: paths.skillMdPath,
+          enabled: true,
+          updatedAt: now
+        });
+      }
+    }
+
     for (const item of allSkills) {
       if (!item.enabled) {
         continue;
       }
-      if (this.skillFileService.exists(item.id)) {
+      if (localSkillIds.has(item.id)) {
         continue;
       }
       this.db.skillRepository.upsert({
@@ -62,5 +95,9 @@ export class SkillService {
         updatedAt: Date.now()
       });
     }
+  }
+
+  syncMissingSkillsToDisabled(): void {
+    this.syncLocalSkillsToDatabase();
   }
 }

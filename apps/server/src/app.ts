@@ -87,6 +87,8 @@ export async function buildApp() {
   const skillFileService = new SkillFileService();
   const skillRuntimeService = new SkillRuntimeService(skillFileService.getRepoRoot());
   const skillService = new SkillService(db, skillFileService);
+  const skillAutoSyncIntervalMs = Math.max(1000, Number(process.env.SKILL_AUTO_SYNC_INTERVAL_MS ?? 3000));
+  let skillAutoSyncTimer: NodeJS.Timeout | null = null;
   const mcpService = new McpService(db);
   const agentService = new AgentService(db);
   const conversationService = new ConversationService(db, skillFileService.getRepoRoot());
@@ -95,7 +97,21 @@ export async function buildApp() {
   const runService = new RunService(db, agentService, conversationService, skillRuntimeService, provider, eventBus);
 
   app.addHook('onReady', async () => {
-    skillService.syncMissingSkillsToDisabled();
+    skillService.syncLocalSkillsToDatabase();
+    skillAutoSyncTimer = setInterval(() => {
+      try {
+        skillService.syncLocalSkillsToDatabase();
+      } catch (error) {
+        app.log.warn({ error }, 'skill auto sync failed');
+      }
+    }, skillAutoSyncIntervalMs);
+  });
+
+  app.addHook('onClose', async () => {
+    if (skillAutoSyncTimer) {
+      clearInterval(skillAutoSyncTimer);
+      skillAutoSyncTimer = null;
+    }
   });
 
   const publicPaths = new Set(['/health', '/auth/login']);

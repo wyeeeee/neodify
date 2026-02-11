@@ -125,12 +125,30 @@ describe('ClaudeAgentProvider event mapping', () => {
       systemPrompt: '你是测试助手',
       model: 'claude-sonnet-4-5',
       maxTokens: 1024,
-      mcpList: [],
+      mcpList: [
+        {
+          id: 'mysql-db',
+          name: 'mysql-db',
+          mode: 'npx',
+          enabled: true,
+          endpoint: null,
+          command: 'npx',
+          args: ['universal-db-mcp'],
+          env: {},
+          headers: {},
+          authConfig: {},
+          timeoutMs: 30000
+        }
+      ],
       cwd: 'C:/workspace/runtime/conv_a',
       onEvent: (event) => {
         streamedEvents.push({ eventType: event.eventType });
       }
     });
+
+    const queryCall = mockedQuery.mock.calls[0]?.[0];
+    const allowedTools = queryCall?.options?.allowedTools as string[];
+    expect(allowedTools).toContain('mcp__mysql-db__*');
 
     expect(result.sessionId).toBe('sess_1');
     expect(result.text).toBe('先调用工具。');

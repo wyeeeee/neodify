@@ -126,7 +126,7 @@ Neodify 后端是“管理后端 + 运行能力后端”：
 #### `GET /skills`
 
 - 鉴权：Bearer Token
-- 说明：返回已启用 Skill 列表（含 `skillMdContent`）
+- 说明：返回已启用 Skill 列表（含 `skillMdContent`），并在返回前自动对齐本地 `skills/*/SKILL.md`（新增自动入库、缺失自动禁用）
 
 #### `POST /skills`
 
@@ -203,6 +203,7 @@ Neodify 后端是“管理后端 + 运行能力后端”：
   - 不传 `conversationId`：自动创建新会话
   - 传 `conversationId` 且存在：继续该会话
   - 传 `conversationId` 但不存在：自动按该 ID 创建会话
+  - 对每个启用 MCP 服务自动放行工具权限：`allowedTools += mcp__<mcp-id>__*`
 
 - 请求体：
 
