@@ -31,7 +31,7 @@
 - 多轮会话：`/runs/invoke` 自动创建或复用 `conversation`，并复用 SDK session（`resume`）
 - 每轮新 Run：同一会话下每次用户消息都会创建新 run 记录（turn_index 递增）
 - 会话级 Skill 复用：Skill 投影到 `.runtime/conversations/<conversationId>/.claude/skills`
-- Claude SDK 已破坏性切换至 TypeScript V2（`createSession/resumeSession/send/stream`）
+- Claude SDK 已切换至稳定 V1 `query` 调用通道（支持 `cwd`、`resume`、`mcpServers`、`systemPrompt`）
 - 单用户登录鉴权：`/auth/login` + Bearer Token 保护管理类 API
 - 测试：DB 仓储、鉴权、Skill 文件服务、事件总线
 
