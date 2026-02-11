@@ -22,6 +22,7 @@
 - Fastify API：Agent / Skill / MCP / Run 的基础接口
 - 运行相关接口：`POST /runs/invoke`、`GET /runs/:runId`、`GET /ws/runs/:runId`
 - 运行相关接口优先使用 `X-API-Key`，同时兼容 Bearer Token（管理端调试）
+- `POST /runs/invoke` 为异步受理接口：立即返回 `runId/conversationId`，执行结果通过查询与事件流获取
 - SDK 抽象层：`AgentProvider` 接口 + `ClaudeAgentProvider` 实现（后续可替换）
 - Run 执行链路：Run 入库、事件入库、执行状态更新
 - WebSocket 实时事件：`/ws/runs/:runId`

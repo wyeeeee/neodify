@@ -198,6 +198,7 @@ Neodify 后端是“管理后端 + 运行能力后端”：
 #### `POST /runs/invoke`
 
 - 鉴权：`X-API-Key` 或 Bearer Token
+- 返回语义：异步受理，接口会立即返回 `runId` 与 `conversationId`
 - 说明：
   - 不传 `conversationId`：自动创建新会话
   - 传 `conversationId` 且存在：继续该会话
@@ -318,3 +319,4 @@ Neodify 后端是“管理后端 + 运行能力后端”：
 - 每次调用 `POST /runs/invoke` 后持久化 `runId`。
 - 先用 WebSocket 实时消费，再用 `GET /runs/:runId` 做落库兜底。
 - 通过 `metadata` 透传业务字段（`caller`、`requestId`、主键等）。
+- 推荐轮询策略：初始 500ms，随后逐步退避到 2s，直至 `status` 变为 `completed` 或 `failed`。
