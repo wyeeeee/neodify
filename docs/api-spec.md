@@ -232,6 +232,7 @@ Neodify 后端是“管理后端 + 运行能力后端”：
 #### `GET /runs/:runId`
 
 - 鉴权：`X-API-Key` 或 Bearer Token
+- 事件写入语义：流式写入（Agent 运行期间每产生一条事件就立即落库并推送）
 - 响应：
 
 ```json
@@ -266,6 +267,14 @@ Neodify 后端是“管理后端 + 运行能力后端”：
 }
 ```
 
+- `events` 中常见 `eventType`：
+  - `run.started` / `run.completed` / `run.failed`
+  - `agent.resolved` / `skill.runtime_prepared`
+  - `agent.system.init` / `agent.system.status`
+  - `agent.assistant` / `agent.result`
+  - `agent.tool.call` / `agent.tool.progress` / `agent.tool.result` / `agent.tool.summary`
+  - `agent.stream_event`（包含 SDK 原始流事件）
+
 #### `GET /ws/runs/:runId`
 
 - 鉴权：支持两种方式
@@ -278,8 +287,15 @@ Neodify 后端是“管理后端 + 运行能力后端”：
 {
   "runId": "run_xxx",
   "seq": 2,
-  "eventType": "agent.output.generated",
-  "payload": {},
+  "eventType": "agent.tool.call",
+  "payload": {
+    "toolUseId": "tool_001",
+    "toolName": "Bash",
+    "input": {
+      "command": "pwd"
+    },
+    "parentToolUseId": null
+  },
   "createdAt": 1739260000100
 }
 ```

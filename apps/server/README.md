@@ -23,6 +23,7 @@
 - 运行相关接口：`POST /runs/invoke`、`GET /runs/:runId`、`GET /ws/runs/:runId`
 - 运行相关接口优先使用 `X-API-Key`，同时兼容 Bearer Token（管理端调试）
 - `POST /runs/invoke` 为异步受理接口：立即返回 `runId/conversationId`，执行结果通过查询与事件流获取
+- 运行事件采用流式写入：执行期间每条事件即时落库并通过 WS 推送
 - SDK 抽象层：`AgentProvider` 接口 + `ClaudeAgentProvider` 实现（后续可替换）
 - Run 执行链路：Run 入库、事件入库、执行状态更新
 - WebSocket 实时事件：`/ws/runs/:runId`
@@ -33,6 +34,8 @@
 - 会话级 Skill 复用：Skill 投影到 `.runtime/conversations/<conversationId>/.claude/skills`
 - Claude SDK 已切换至稳定 V1 `query` 调用通道（支持 `cwd`、`resume`、`mcpServers`、`systemPrompt`）
 - 单用户登录鉴权：`/auth/login` + Bearer Token 保护管理类 API
+- 运行事件增强：已落库工具调用链路事件（`agent.tool.call`、`agent.tool.progress`、`agent.tool.result`、`agent.tool.summary`）
+- 开发日志美化：`NODE_ENV!=production` 时启用 `pino-pretty` 便于本地排查
 - 测试：DB 仓储、鉴权、Skill 文件服务、事件总线
 
 ## 环境变量

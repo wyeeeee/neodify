@@ -21,6 +21,13 @@ Neodify 是一个基于 `Claude Agent SDK` 的生产级 Agent 运行框架（规
 
 - `PLAN.md`：V1 详细设计计划，包含标准 Skill 格式、架构、数据模型、模块划分、里程碑与验收标准。
 - `apps/server/src/db`：后端内置数据库层（schema + repository + type）。
+- `docs/api-spec.md`：后端接口规范，已补充运行事件类型与 tool 调用链路事件说明。
+
+## 最近后端更新（2026-02-11）
+
+- `POST /runs/invoke` 采用异步受理语义，先返回 `runId/conversationId`，结果通过查询或事件流获取。
+- 运行事件已增强，`run_events` 可保留工具调用链路（`agent.tool.call/progress/result/summary`）。
+- 后端开发模式日志启用美化输出（`pino-pretty`），便于本地调试与排障。
 
 ## 启动命令
 

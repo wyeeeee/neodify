@@ -59,7 +59,21 @@ function verifyServiceApiKey(providedApiKey: string | undefined, expectedApiKey:
 }
 
 export async function buildApp() {
-  const app = Fastify({ logger: true });
+  const isProduction = process.env.NODE_ENV === 'production';
+  const app = Fastify({
+    logger: isProduction
+      ? true
+      : {
+          level: process.env.LOG_LEVEL ?? 'info',
+          transport: {
+            target: 'pino-pretty',
+            options: {
+              translateTime: 'SYS:standard',
+              ignore: 'pid,hostname'
+            }
+          }
+        }
+  });
   await app.register(cors, { origin: true });
   await app.register(websocket);
 

@@ -64,16 +64,15 @@ export class RunService {
         maxTokens: resolved.agent.maxTokens,
         mcpList: resolved.mcps,
         cwd: runCwd,
-        resumeSessionId: conversation.sdkSessionId ?? undefined
+        resumeSessionId: conversation.sdkSessionId ?? undefined,
+        onEvent: (event) => {
+          this.appendEvent(runId, ++seq, event.eventType, event.payload);
+        }
       });
 
       if (result.sessionId) {
         this.conversationService.updateSessionId(conversation.id, result.sessionId);
         this.db.runRepository.updateSdkSessionId(runId, result.sessionId);
-      }
-
-      for (const event of result.events) {
-        this.appendEvent(runId, ++seq, event.eventType, event.payload);
       }
 
       const endedAt = Date.now();
