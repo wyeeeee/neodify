@@ -1,7 +1,7 @@
 import {
-  unstable_v2_createSession,
-  unstable_v2_resumeSession,
-  type McpServerConfig
+  query,
+  type McpServerConfig,
+  type SettingSource
 } from '@anthropic-ai/claude-agent-sdk';
 import type { AgentProvider, AgentProviderInput } from './agent-provider.js';
 import type { RunResult } from '../types/domain.js';
@@ -53,7 +53,7 @@ export class ClaudeAgentProvider implements AgentProvider {
 
     const options = {
       cwd: input.cwd,
-      settingSources: ['project'] as const,
+      settingSources: ['project'] as SettingSource[],
       allowedTools: ['Skill', 'Read', 'Write', 'Edit', 'Bash', 'Glob', 'Grep'],
       sandbox: {
         enabled: true,
@@ -64,21 +64,27 @@ export class ClaudeAgentProvider implements AgentProvider {
       model: input.model,
       maxTurns: 12,
       mcpServers: toMcpConfig(input.mcpList),
-      extraArgs: {
-        'max-output-tokens': String(input.maxTokens)
-      }
+      resume: input.resumeSessionId
     };
 
-    const session = input.resumeSessionId
-      ? unstable_v2_resumeSession(input.resumeSessionId, options)
-      : unstable_v2_createSession(options);
+    const runtimeQuery = query({
+      prompt: input.prompt,
+      options
+    });
 
     try {
-      await session.send(input.prompt);
-
-      for await (const message of session.stream()) {
+      for await (const message of runtimeQuery) {
         if ('session_id' in message && typeof message.session_id === 'string') {
           sessionId = message.session_id;
+        }
+        if (message.type === 'system' && message.subtype === 'init') {
+          events.push({
+            eventType: 'agent.system.init',
+            payload: {
+              cwd: message.cwd,
+              model: message.model
+            }
+          });
         }
         if (message.type === 'assistant') {
           const blocks = message.message.content as UnknownContentBlock[];
@@ -120,7 +126,7 @@ export class ClaudeAgentProvider implements AgentProvider {
         }
       }
     } finally {
-      session.close();
+      runtimeQuery.close();
     }
 
     return {
