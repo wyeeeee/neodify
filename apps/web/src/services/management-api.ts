@@ -1,4 +1,4 @@
-import type { AgentConfig, CreateAgentPayload, McpConfig, SkillConfig } from '../types/management'
+import type { AgentConfig, AgentDetail, CreateAgentPayload, McpConfig, SkillConfig } from '../types/management'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? '/api'
 
@@ -67,6 +67,21 @@ export async function listSkills(token: string): Promise<SkillConfig[]> {
   return payload as SkillConfig[]
 }
 
+export async function getAgentDetail(token: string, agentId: string): Promise<AgentDetail> {
+  const response = await fetch(`${API_BASE_URL}/agents/${encodeURIComponent(agentId)}`, {
+    method: 'GET',
+    headers: buildAuthHeaders(token)
+  })
+  const payload = await parseApiResponse(response)
+  if (!response.ok) {
+    throw new Error(getErrorMessage(payload, `获取 Agent 详情失败（HTTP ${response.status}）`))
+  }
+  if (typeof payload !== 'object' || payload === null) {
+    throw new Error('获取 Agent 详情失败：响应格式错误')
+  }
+  return payload as AgentDetail
+}
+
 export async function listMcps(token: string): Promise<McpConfig[]> {
   const response = await fetch(`${API_BASE_URL}/mcps`, {
     method: 'GET',
@@ -100,4 +115,3 @@ export async function saveAgent(token: string, input: CreateAgentPayload): Promi
     throw new Error(record.message ?? '保存 Agent 失败')
   }
 }
-

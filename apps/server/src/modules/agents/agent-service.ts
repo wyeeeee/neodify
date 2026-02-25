@@ -5,6 +5,26 @@ import type { CreateAgentDto } from '../../types/api.js';
 export class AgentService {
   constructor(private readonly db: DbContext) {}
 
+  private toAgentConfig(item: {
+    id: string;
+    name: string;
+    enabled: boolean;
+    model: string;
+    systemPromptMd: string;
+    temperature: number;
+    maxTokens: number;
+  }): AgentConfig {
+    return {
+      id: item.id,
+      name: item.name,
+      enabled: item.enabled,
+      model: item.model,
+      systemPromptMd: item.systemPromptMd,
+      temperature: item.temperature,
+      maxTokens: item.maxTokens
+    };
+  }
+
   saveAgent(input: CreateAgentDto): void {
     const now = Date.now();
     this.db.agentRepository.upsert({
@@ -40,16 +60,24 @@ export class AgentService {
     );
   }
 
-  listEnabledAgents(): AgentConfig[] {
-    return this.db.agentRepository.listEnabled().map((item) => ({
-      id: item.id,
-      name: item.name,
-      enabled: item.enabled,
-      model: item.model,
-      systemPromptMd: item.systemPromptMd,
-      temperature: item.temperature,
-      maxTokens: item.maxTokens
-    }));
+  listAgents(): AgentConfig[] {
+    return this.db.agentRepository.listAll().map((item) => this.toAgentConfig(item));
+  }
+
+  getAgentDetail(agentId: string): (AgentConfig & { skillIds: string[]; mcpIds: string[] }) | null {
+    const agent = this.db.agentRepository.getById(agentId);
+    if (!agent) {
+      return null;
+    }
+
+    const skillIds = this.db.agentSkillBindingRepository.listEnabledSkillIdsByAgent(agentId);
+    const mcpIds = this.db.agentMcpBindingRepository.listEnabledMcpIdsByAgent(agentId);
+
+    return {
+      ...this.toAgentConfig(agent),
+      skillIds,
+      mcpIds
+    };
   }
 
   resolveAgent(agentId: string): {
@@ -93,15 +121,7 @@ export class AgentService {
       }));
 
     return {
-      agent: {
-        id: agent.id,
-        name: agent.name,
-        enabled: agent.enabled,
-        model: agent.model,
-        systemPromptMd: agent.systemPromptMd,
-        temperature: agent.temperature,
-        maxTokens: agent.maxTokens
-      },
+      agent: this.toAgentConfig(agent),
       skills,
       mcps
     };

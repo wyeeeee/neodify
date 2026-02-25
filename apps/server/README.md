@@ -20,6 +20,7 @@
 ## 当前已实现
 
 - Fastify API：Agent / Skill / MCP / Run 的基础接口
+- Agent 管理接口已支持：`GET /agents` 返回全量（含禁用）与 `GET /agents/:agentId` 返回详情（含 skillIds/mcpIds）
 - 运行相关接口：`POST /runs/invoke`、`GET /runs/:runId`、`GET /ws/runs/:runId`
 - 运行相关接口优先使用 `X-API-Key`，同时兼容 Bearer Token（管理端调试）
 - `POST /runs/invoke` 为异步受理接口：立即返回 `runId/conversationId`，执行结果通过查询与事件流获取

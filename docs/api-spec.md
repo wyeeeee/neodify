@@ -98,7 +98,27 @@ Neodify 后端是“管理后端 + 运行能力后端”：
 #### `GET /agents`
 
 - 鉴权：Bearer Token
-- 说明：返回已启用 Agent 列表
+- 说明：返回全部 Agent 列表（包含启用与禁用）
+
+#### `GET /agents/:agentId`
+
+- 鉴权：Bearer Token
+- 说明：返回指定 Agent 详情（含绑定关系）
+- 响应示例：
+
+```json
+{
+  "id": "agent-main",
+  "name": "主 Agent",
+  "enabled": true,
+  "model": "claude-sonnet-4-5",
+  "systemPromptMd": "# 你是一个严谨助手",
+  "temperature": 0.2,
+  "maxTokens": 4000,
+  "skillIds": ["skill-a", "skill-b"],
+  "mcpIds": ["mcp-a"]
+}
+```
 
 #### `POST /agents`
 

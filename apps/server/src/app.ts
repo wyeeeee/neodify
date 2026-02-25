@@ -191,7 +191,15 @@ export async function buildApp() {
 
   app.get('/health', async () => ({ ok: true }));
 
-  app.get('/agents', async () => agentService.listEnabledAgents());
+  app.get('/agents', async () => agentService.listAgents());
+  app.get('/agents/:agentId', async (request, reply) => {
+    const params = request.params as { agentId: string };
+    const detail = agentService.getAgentDetail(params.agentId);
+    if (!detail) {
+      return reply.status(404).send({ ok: false, message: 'agent 不存在' });
+    }
+    return reply.send(detail);
+  });
   app.post('/agents', async (request, reply) => {
     const payload = createAgentSchema.parse(request.body);
     agentService.saveAgent(payload);

@@ -53,6 +53,21 @@ export class AgentRepository {
     }));
   }
 
+  listAll(): AgentRecord[] {
+    const rows = this.db.prepare('SELECT * FROM agents ORDER BY name ASC').all() as Array<Record<string, unknown>>;
+    return rows.map((row) => ({
+      id: String(row.id),
+      name: String(row.name),
+      enabled: Number(row.enabled) === 1,
+      model: String(row.model),
+      systemPromptMd: String(row.system_prompt_md),
+      temperature: Number(row.temperature),
+      maxTokens: Number(row.max_tokens),
+      createdAt: Number(row.created_at),
+      updatedAt: Number(row.updated_at)
+    }));
+  }
+
   getById(agentId: string): AgentRecord | null {
     const row = this.db.prepare('SELECT * FROM agents WHERE id = ?').get(agentId) as Record<string, unknown> | undefined;
     if (!row) {

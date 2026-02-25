@@ -8,6 +8,11 @@ export interface AgentConfig {
   maxTokens: number
 }
 
+export interface AgentDetail extends AgentConfig {
+  skillIds: string[]
+  mcpIds: string[]
+}
+
 export interface SkillConfig {
   id: string
   name: string
@@ -44,4 +49,3 @@ export interface CreateAgentPayload {
   skillIds: string[]
   mcpIds: string[]
 }
-

@@ -78,6 +78,23 @@ describe('App Login Page', () => {
             ])
         } as Response
       }
+      if (url.endsWith('/agents/agent-main')) {
+        return {
+          ok: true,
+          text: async () =>
+            JSON.stringify({
+              id: 'agent-main',
+              name: '主 Agent',
+              enabled: true,
+              model: 'claude-sonnet-4-5',
+              systemPromptMd: '# 你是一个严谨助手',
+              temperature: 0.2,
+              maxTokens: 4000,
+              skillIds: [],
+              mcpIds: []
+            })
+        } as Response
+      }
       if (url.endsWith('/skills') || url.endsWith('/mcps')) {
         return {
           ok: true,
@@ -103,7 +120,7 @@ describe('App Login Page', () => {
     await agentNavButton!.trigger('click')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('Agent 列表')
+    expect(wrapper.text()).toContain('Agents')
     expect(wrapper.text()).toContain('agent-main')
   })
 })
