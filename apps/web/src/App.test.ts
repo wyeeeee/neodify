@@ -38,8 +38,10 @@ describe('App Login Page', () => {
     await wrapper.get('form').trigger('submit.prevent')
     await flushPromises()
 
-    expect(wrapper.text()).toContain('当前用户')
+    expect(wrapper.text()).toContain('环境 development')
+    expect(wrapper.text()).toContain('运行控制台')
     expect(wrapper.text()).toContain('admin')
+    expect(wrapper.text()).toContain('该模块内容正在开发中')
     const sessionRaw = localStorage.getItem('neodify.auth.session')
     expect(sessionRaw).toBeTruthy()
   })

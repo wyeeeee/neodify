@@ -8,3 +8,4 @@
 
 - `docs/api-spec.md`：后端 API 接口规范（鉴权、请求/响应、错误码、调用示例）
 - `docs/plan.md`：当前阶段产品与技术规划（已按“管理后端 + 服务调用”边界更新）
+- `docs/frontend-ui-wireframes.md`：前端 MVP 界面草图（路由、页面线框、交互状态与实施顺序）
