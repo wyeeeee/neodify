@@ -35,6 +35,36 @@ describe('db repositories', () => {
     expect(agents[0]?.name).toBe('主Agent');
   });
 
+  test('agent repository can delete agent and bindings', () => {
+    const db = createDbContext(dbPath);
+    db.agentRepository.upsert({
+      id: 'agent-delete',
+      name: '待删除Agent',
+      enabled: true,
+      model: 'claude-sonnet-4-5',
+      systemPromptMd: '# prompt',
+      temperature: 0.2,
+      maxTokens: 4000,
+      createdAt: now,
+      updatedAt: now
+    });
+    db.agentSkillBindingRepository.replaceByAgent('agent-delete', [
+      { agentId: 'agent-delete', skillId: 'skill-1', enabled: true, priority: 0 }
+    ]);
+    db.agentMcpBindingRepository.replaceByAgent('agent-delete', [
+      { agentId: 'agent-delete', mcpId: 'mcp-1', enabled: true, priority: 0 }
+    ]);
+
+    db.agentSkillBindingRepository.deleteByAgent('agent-delete');
+    db.agentMcpBindingRepository.deleteByAgent('agent-delete');
+    const deleted = db.agentRepository.deleteById('agent-delete');
+
+    expect(deleted).toBe(true);
+    expect(db.agentRepository.getById('agent-delete')).toBeNull();
+    expect(db.agentSkillBindingRepository.listEnabledSkillIdsByAgent('agent-delete')).toEqual([]);
+    expect(db.agentMcpBindingRepository.listEnabledMcpIdsByAgent('agent-delete')).toEqual([]);
+  });
+
   test('run and event repositories can persist execution timeline', () => {
     const db = createDbContext(dbPath);
     db.runRepository.create({

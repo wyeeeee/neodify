@@ -141,6 +141,12 @@ Neodify 后端是“管理后端 + 运行能力后端”：
 
 - 响应：`{ "ok": true }`
 
+#### `DELETE /agents/:agentId`
+
+- 鉴权：Bearer Token
+- 说明：删除指定 Agent，并清理其 `agent_skills` / `agent_mcps` 绑定关系
+- 响应：`{ "ok": true }`
+
 ### 4.4 Skill 管理
 
 #### `GET /skills`

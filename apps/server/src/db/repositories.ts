@@ -85,6 +85,11 @@ export class AgentRepository {
       updatedAt: Number(row.updated_at)
     };
   }
+
+  deleteById(agentId: string): boolean {
+    const result = this.db.prepare('DELETE FROM agents WHERE id = ?').run(agentId);
+    return result.changes > 0;
+  }
 }
 
 export class SkillRepository {
@@ -259,6 +264,10 @@ export class AgentSkillBindingRepository {
       .all(agentId) as Array<Record<string, unknown>>;
     return rows.map((row) => String(row.skill_id));
   }
+
+  deleteByAgent(agentId: string): void {
+    this.db.prepare('DELETE FROM agent_skills WHERE agent_id = ?').run(agentId);
+  }
 }
 
 export class AgentMcpBindingRepository {
@@ -285,6 +294,10 @@ export class AgentMcpBindingRepository {
       .prepare('SELECT mcp_id FROM agent_mcps WHERE agent_id = ? AND enabled = 1 ORDER BY priority ASC, mcp_id ASC')
       .all(agentId) as Array<Record<string, unknown>>;
     return rows.map((row) => String(row.mcp_id));
+  }
+
+  deleteByAgent(agentId: string): void {
+    this.db.prepare('DELETE FROM agent_mcps WHERE agent_id = ?').run(agentId);
   }
 }
 

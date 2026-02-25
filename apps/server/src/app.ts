@@ -205,6 +205,14 @@ export async function buildApp() {
     agentService.saveAgent(payload);
     return reply.send({ ok: true });
   });
+  app.delete('/agents/:agentId', async (request, reply) => {
+    const params = request.params as { agentId: string };
+    const deleted = agentService.deleteAgent(params.agentId);
+    if (!deleted) {
+      return reply.status(404).send({ ok: false, message: 'agent 不存在' });
+    }
+    return reply.send({ ok: true });
+  });
 
   app.get('/skills', async () => skillService.listEnabledSkills());
   app.post('/skills', async (request, reply) => {

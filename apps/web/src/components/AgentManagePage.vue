@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
-import { getAgentDetail, listAgents, listMcps, listSkills, saveAgent } from '../services/management-api'
+import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { deleteAgent, getAgentDetail, listAgents, listMcps, listSkills, saveAgent } from '../services/management-api'
 import type { AgentConfig, AgentDetail, CreateAgentPayload, McpConfig, SkillConfig } from '../types/management'
 
 const props = defineProps<{
@@ -15,9 +15,14 @@ const hasLoadedAgentData = ref(false)
 const isAgentDataLoading = ref(false)
 const isAgentDetailLoading = ref(false)
 const isAgentSaving = ref(false)
+const isAgentDeleting = ref(false)
 const agentDataErrorMessage = ref('')
 const agentFormMessage = ref('')
 const selectedAgentId = ref('')
+const openActionAgentId = ref('')
+const pendingDeleteAgentId = ref('')
+const actionMenuLeft = ref(0)
+const actionMenuTop = ref(0)
 const skillKeyword = ref('')
 const mcpKeyword = ref('')
 
@@ -184,11 +189,122 @@ async function loadAgentDetailById(agentId: string): Promise<void> {
 }
 
 async function handleSelectAgent(agentId: string): Promise<void> {
+  closeActionMenu()
   if (selectedAgentId.value === agentId && !isAgentDetailLoading.value) {
     return
   }
   await loadAgentDetailById(agentId)
 }
+
+function closeActionMenu(): void {
+  pendingDeleteAgentId.value = ''
+  openActionAgentId.value = ''
+}
+
+function handleToggleActionMenu(agentId: string, event: Event): void {
+  if (openActionAgentId.value === agentId) {
+    closeActionMenu()
+    return
+  }
+
+  const trigger = event.currentTarget as HTMLElement | null
+  if (!trigger) {
+    return
+  }
+
+  const rect = trigger.getBoundingClientRect()
+  const menuWidth = 120
+  const menuHeight = 42
+  const padding = 8
+
+  let top = rect.bottom + 6
+  if (top + menuHeight > window.innerHeight - padding) {
+    top = rect.top - menuHeight - 6
+  }
+  if (top < padding) {
+    top = padding
+  }
+
+  let left = rect.right - menuWidth
+  if (left < padding) {
+    left = padding
+  }
+  if (left + menuWidth > window.innerWidth - padding) {
+    left = window.innerWidth - menuWidth - padding
+  }
+
+  actionMenuTop.value = top
+  actionMenuLeft.value = left
+  pendingDeleteAgentId.value = ''
+  openActionAgentId.value = agentId
+}
+
+function beginDeleteAgent(agentId: string): void {
+  pendingDeleteAgentId.value = agentId
+}
+
+function cancelDeleteAgent(): void {
+  pendingDeleteAgentId.value = ''
+}
+
+async function handleDeleteAgent(agentId: string): Promise<void> {
+  const target = agents.value.find((item) => item.id === agentId)
+  const displayName = target?.name ?? agentId
+
+  closeActionMenu()
+  isAgentDeleting.value = true
+  try {
+    await deleteAgent(props.token, agentId)
+    if (selectedAgentId.value === agentId) {
+      startCreateAgent()
+    }
+    agentFormMessage.value = `已删除 Agent：${displayName}`
+    await loadAgentData(true)
+  } catch (error) {
+    const message = resolveErrorMessage(error, '删除 Agent 失败')
+    agentFormMessage.value = message
+    if (isUnauthorizedError(message)) {
+      emit('unauthorized')
+    }
+  } finally {
+    isAgentDeleting.value = false
+  }
+}
+
+function handleGlobalPointerDown(event: PointerEvent): void {
+  const target = event.target as HTMLElement | null
+  if (!target) {
+    return
+  }
+  if (target.closest('.agent-action-menu') || target.closest('.agent-action-trigger')) {
+    return
+  }
+  closeActionMenu()
+}
+
+function handleEscapeKey(event: KeyboardEvent): void {
+  if (event.key === 'Escape') {
+    closeActionMenu()
+  }
+}
+
+function handleViewportChange(): void {
+  closeActionMenu()
+}
+
+onMounted(() => {
+  window.addEventListener('pointerdown', handleGlobalPointerDown)
+  window.addEventListener('keydown', handleEscapeKey)
+  window.addEventListener('resize', handleViewportChange)
+  window.addEventListener('scroll', handleViewportChange, true)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('pointerdown', handleGlobalPointerDown)
+  window.removeEventListener('keydown', handleEscapeKey)
+  window.removeEventListener('resize', handleViewportChange)
+  window.removeEventListener('scroll', handleViewportChange, true)
+})
 
 async function loadAgentData(force = false): Promise<void> {
   if (!force && hasLoadedAgentData.value) {
@@ -324,12 +440,48 @@ watch(
               <p class="agent-nav-name">{{ item.name }}</p>
               <p class="agent-nav-id">{{ item.id }}</p>
             </div>
-            <span class="status-pill" :class="item.enabled ? 'is-enabled' : 'is-disabled'">
-              {{ item.enabled ? '启用' : '禁用' }}
-            </span>
+
+            <div class="agent-nav-item-actions" @click.stop>
+              <span class="status-pill" :class="item.enabled ? 'is-enabled' : 'is-disabled'">
+                {{ item.enabled ? '启用' : '禁用' }}
+              </span>
+              <button class="agent-action-trigger" type="button" @click="handleToggleActionMenu(item.id, $event)">···</button>
+            </div>
           </button>
         </div>
       </aside>
+
+      <Teleport to="body">
+        <div
+          v-if="openActionAgentId"
+          class="agent-action-menu"
+          :style="{ top: `${actionMenuTop}px`, left: `${actionMenuLeft}px` }"
+        >
+          <template v-if="pendingDeleteAgentId === openActionAgentId">
+            <p class="agent-action-confirm-text">确认删除该 Agent？</p>
+            <div class="agent-action-confirm-actions">
+              <button class="agent-action-item" type="button" @click="cancelDeleteAgent">取消</button>
+              <button
+                class="agent-action-item is-danger"
+                type="button"
+                :disabled="isAgentDeleting"
+                @click="handleDeleteAgent(openActionAgentId)"
+              >
+                {{ isAgentDeleting ? '删除中...' : '确认删除' }}
+              </button>
+            </div>
+          </template>
+          <button
+            v-else
+            class="agent-action-item is-danger"
+            type="button"
+            :disabled="isAgentDeleting"
+            @click="beginDeleteAgent(openActionAgentId)"
+          >
+            删除
+          </button>
+        </div>
+      </Teleport>
 
       <article class="agent-editor-panel">
         <div class="panel-head">

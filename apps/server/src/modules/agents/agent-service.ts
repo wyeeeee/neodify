@@ -60,6 +60,17 @@ export class AgentService {
     );
   }
 
+  deleteAgent(agentId: string): boolean {
+    const existed = this.db.agentRepository.getById(agentId);
+    if (!existed) {
+      return false;
+    }
+
+    this.db.agentSkillBindingRepository.deleteByAgent(agentId);
+    this.db.agentMcpBindingRepository.deleteByAgent(agentId);
+    return this.db.agentRepository.deleteById(agentId);
+  }
+
   listAgents(): AgentConfig[] {
     return this.db.agentRepository.listAll().map((item) => this.toAgentConfig(item));
   }

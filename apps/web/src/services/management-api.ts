@@ -9,8 +9,14 @@ interface BaseApiResponse {
 
 function buildAuthHeaders(token: string): HeadersInit {
   return {
-    'Content-Type': 'application/json',
     Authorization: `Bearer ${token}`
+  }
+}
+
+function buildJsonAuthHeaders(token: string): HeadersInit {
+  return {
+    ...buildAuthHeaders(token),
+    'Content-Type': 'application/json'
   }
 }
 
@@ -100,7 +106,7 @@ export async function listMcps(token: string): Promise<McpConfig[]> {
 export async function saveAgent(token: string, input: CreateAgentPayload): Promise<void> {
   const response = await fetch(`${API_BASE_URL}/agents`, {
     method: 'POST',
-    headers: buildAuthHeaders(token),
+    headers: buildJsonAuthHeaders(token),
     body: JSON.stringify(input)
   })
   const payload = await parseApiResponse(response)
@@ -113,5 +119,23 @@ export async function saveAgent(token: string, input: CreateAgentPayload): Promi
   const record = payload as BaseApiResponse
   if (!record.ok) {
     throw new Error(record.message ?? '保存 Agent 失败')
+  }
+}
+
+export async function deleteAgent(token: string, agentId: string): Promise<void> {
+  const response = await fetch(`${API_BASE_URL}/agents/${encodeURIComponent(agentId)}`, {
+    method: 'DELETE',
+    headers: buildAuthHeaders(token)
+  })
+  const payload = await parseApiResponse(response)
+  if (!response.ok) {
+    throw new Error(getErrorMessage(payload, `删除 Agent 失败（HTTP ${response.status}）`))
+  }
+  if (typeof payload !== 'object' || payload === null) {
+    throw new Error('删除 Agent 失败：响应格式错误')
+  }
+  const record = payload as BaseApiResponse
+  if (!record.ok) {
+    throw new Error(record.message ?? '删除 Agent 失败')
   }
 }

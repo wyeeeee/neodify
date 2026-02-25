@@ -27,6 +27,8 @@
   - 点击左侧 Agent 自动加载右侧编辑表单（无需手动“载入表单”）
   - Agent 列表读取（`GET /agents`）与详情读取（`GET /agents/:agentId`）
   - Agent 新建/覆盖保存（`POST /agents`）
+  - Agent 列表项提供操作菜单（可扩展），当前支持删除（`DELETE /agents/:agentId`）
+  - 删除交互采用自定义二次确认面板（非系统浏览器弹窗）
   - Skill / MCP 绑定改为“可搜索 + 可滚动 + 批量选择 + 已选标签”模式，适配大规模配置
   - Skill / MCP 选择区域桌面端已改为横向双栏，减少纵向占用
 
