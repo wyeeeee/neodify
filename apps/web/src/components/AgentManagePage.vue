@@ -23,6 +23,7 @@ const openActionAgentId = ref('')
 const pendingDeleteAgentId = ref('')
 const actionMenuLeft = ref(0)
 const actionMenuTop = ref(0)
+const agentKeyword = ref('')
 const skillKeyword = ref('')
 const mcpKeyword = ref('')
 
@@ -43,6 +44,16 @@ const agentForm = reactive<CreateAgentPayload>({
 })
 
 const selectedAgent = computed(() => agents.value.find((item) => item.id === selectedAgentId.value) ?? null)
+
+const filteredAgents = computed(() => {
+  const keyword = agentKeyword.value.trim().toLowerCase()
+  if (!keyword) {
+    return agents.value
+  }
+  return agents.value.filter((item) => {
+    return item.name.toLowerCase().includes(keyword) || item.id.toLowerCase().includes(keyword)
+  })
+})
 
 const filteredSkills = computed(() => {
   const keyword = skillKeyword.value.trim().toLowerCase()
@@ -427,9 +438,11 @@ watch(
         <p v-if="agentDataErrorMessage" class="panel-error">{{ agentDataErrorMessage }}</p>
 
         <div class="agent-nav-list">
+          <input v-model="agentKeyword" class="selector-search" type="text" placeholder="搜索 Agent 名称或ID" />
           <p v-if="!agents.length && !isAgentDataLoading" class="option-empty">暂无 Agent，请点击“新建”创建。</p>
+          <p v-else-if="!filteredAgents.length" class="option-empty">没有匹配的 Agent。</p>
           <button
-            v-for="item in agents"
+            v-for="item in filteredAgents"
             :key="item.id"
             type="button"
             class="agent-nav-item"
@@ -495,27 +508,47 @@ watch(
         <p v-if="isAgentDetailLoading" class="form-feedback">正在加载 Agent 详情...</p>
 
         <form class="agent-form" @submit.prevent="handleSaveAgent">
-          <div class="form-grid-2">
-            <label class="field">
+          <div class="agent-basic-grid">
+            <label class="field basic-span-5">
               <span>Agent ID</span>
               <input v-model="agentForm.id" type="text" placeholder="agent-main" />
             </label>
-            <label class="field">
+            <label class="field basic-span-5">
               <span>名称</span>
               <input v-model="agentForm.name" type="text" placeholder="主 Agent" />
             </label>
-          </div>
 
-          <div class="form-grid-3">
-            <label class="field">
+            <div class="field field-switch basic-span-2">
+              <span>状态</span>
+              <div class="toggle-group" role="group" aria-label="Agent 状态">
+                <button
+                  class="toggle-button"
+                  type="button"
+                  :class="{ 'is-active': agentForm.enabled }"
+                  @click="agentForm.enabled = true"
+                >
+                  启用
+                </button>
+                <button
+                  class="toggle-button"
+                  type="button"
+                  :class="{ 'is-active': !agentForm.enabled }"
+                  @click="agentForm.enabled = false"
+                >
+                  禁用
+                </button>
+              </div>
+            </div>
+
+            <label class="field basic-span-6">
               <span>模型</span>
               <input v-model="agentForm.model" type="text" placeholder="claude-sonnet-4-5" />
             </label>
-            <label class="field">
+            <label class="field basic-span-3">
               <span>Temperature</span>
               <input v-model.number="agentForm.temperature" type="number" step="0.1" min="0" max="2" />
             </label>
-            <label class="field">
+            <label class="field basic-span-3">
               <span>Max Tokens</span>
               <input v-model.number="agentForm.maxTokens" type="number" step="1" min="1" />
             </label>
@@ -524,11 +557,6 @@ watch(
           <label class="field">
             <span>系统提示词（Markdown）</span>
             <textarea v-model="agentForm.systemPromptMd" rows="5" placeholder="# 你是一个严谨助手"></textarea>
-          </label>
-
-          <label class="switch-row">
-            <input v-model="agentForm.enabled" type="checkbox" />
-            <span>启用该 Agent</span>
           </label>
 
           <div class="selector-grid">
